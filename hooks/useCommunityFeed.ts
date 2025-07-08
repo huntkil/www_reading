@@ -1,22 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Post } from '@/lib/types';
-import { useAuth } from '@/contexts/AuthContext';
 
 export function useCommunityFeed() {
-  const { user, isAuthenticated } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newPostContent, setNewPostContent] = useState('');
 
   const fetchPosts = useCallback(async () => {
-    // Do not set loading to true here to avoid entire feed flashing on refetch
-    // setLoading(true); 
     try {
       const res = await fetch('/api/post');
       if (!res.ok) throw new Error('게시글을 불러오는데 실패했습니다.');
       const data = await res.json();
-      setPosts(data.posts);
+      setPosts(data.data || []);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -30,15 +26,14 @@ export function useCommunityFeed() {
 
   const handlePostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPostContent.trim() || !user) return;
+    if (!newPostContent.trim()) return;
 
     const tempPost = {
       id: `temp-${Date.now()}`,
       content: newPostContent,
       createdAt: new Date().toISOString(),
-      author: { id: user.id, name: user.name, email: user.email },
       comments: [],
-      _count: { likes: 0 },
+      _count: { likes: 0, comments: 0 },
       likedByMe: false,
     };
 
@@ -61,8 +56,6 @@ export function useCommunityFeed() {
   };
 
   const handleLike = async (postId: string) => {
-    if (!isAuthenticated) return;
-    
     setPosts(prevPosts =>
       prevPosts.map(p =>
         p.id === postId
@@ -91,19 +84,25 @@ export function useCommunityFeed() {
   };
 
   const handleCommentSubmit = async (postId: string, text: string) => {
-    if (!text.trim() || !user) return;
+    if (!text.trim()) return;
 
     const tempComment = {
         id: `temp-${Date.now()}`,
         text,
         createdAt: new Date().toISOString(),
-        author: { id: user.id, name: user.name, email: user.email }
     };
 
     setPosts(prevPosts =>
         prevPosts.map(p =>
             p.id === postId
-                ? { ...p, comments: [...p.comments, tempComment] }
+                ? { 
+                    ...p, 
+                    comments: [...p.comments, tempComment],
+                    _count: {
+                      ...p._count,
+                      comments: p._count.comments + 1,
+                    }
+                  }
                 : p
         )
     );
@@ -134,7 +133,5 @@ export function useCommunityFeed() {
     handlePostSubmit,
     handleLike,
     handleCommentSubmit,
-    isAuthenticated,
-    user
   };
 } 

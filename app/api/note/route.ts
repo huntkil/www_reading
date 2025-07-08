@@ -1,48 +1,79 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+// GET /api/note - 노트 목록 조회
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
-    }
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const offset = parseInt(searchParams.get('offset') || '0');
 
     const notes = await prisma.note.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+      take: limit,
+      skip: offset,
     });
-    return NextResponse.json(notes);
+
+    const total = await prisma.note.count();
+
+    return NextResponse.json({
+      success: true,
+      data: notes,
+      pagination: {
+        total,
+        limit,
+        offset,
+        hasMore: offset + limit < total,
+      },
+    });
   } catch (error) {
-    console.error('Error fetching notes:', error);
-    return NextResponse.json({ error: 'Error fetching notes' }, { status: 500 });
+    console.error('노트 목록 조회 오류:', error);
+    return NextResponse.json(
+      { success: false, error: '노트 목록을 조회할 수 없습니다.' },
+      { status: 500 }
+    );
   }
 }
 
+// POST /api/note - 새 노트 생성
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, path, content, metadata, sessionId } = body;
+    const { path, content, metadata, sessionId } = body;
 
-    if (!userId || !path || !content) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    // 필수 필드 검증
+    if (!path || !content) {
+      return NextResponse.json(
+        { success: false, error: 'path와 content는 필수입니다.' },
+        { status: 400 }
+      );
     }
 
-    const newNote = await prisma.note.create({
-      data: {
-        userId,
-        path,
-        content,
-        metadata: metadata ? JSON.stringify(metadata) : null,
-        sessionId,
-      },
+    const noteData: any = {
+      path,
+      content,
+      metadata: metadata ? JSON.stringify(metadata) : null,
+    };
+
+    if (sessionId) {
+      noteData.sessionId = sessionId;
+    }
+
+    const note = await prisma.note.create({
+      data: noteData,
     });
 
-    return NextResponse.json(newNote, { status: 201 });
+    return NextResponse.json({
+      success: true,
+      data: note,
+    }, { status: 201 });
   } catch (error) {
-    console.error('Error creating note:', error);
-    return NextResponse.json({ error: 'Error creating note' }, { status: 500 });
+    console.error('노트 생성 오류:', error);
+    return NextResponse.json(
+      { success: false, error: '노트를 생성할 수 없습니다.' },
+      { status: 500 }
+    );
   }
 } 
