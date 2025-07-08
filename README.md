@@ -1,6 +1,6 @@
 # 속발음 코칭 프로그램 (Subvocalization Coaching App)
 
-Next.js 기반의 AI 파워드 속발음 훈련 애플리케이션으로, 개인화된 훈련 계획과 실시간 진행 추적을 제공합니다.
+Next.js 기반의 AI 파워드 속발음 훈련 애플리케이션으로, 개인화된 훈련 계획과 실시간 진행 추적을 제공하는 **개인 기록용 앱**입니다.
 
 ## 🚀 주요 기능
 
@@ -10,7 +10,7 @@ Next.js 기반의 AI 파워드 속발음 훈련 애플리케이션으로, 개인
 - **진행 추적**: 읽기 속도, 이해도, 단어 수 등 상세한 통계
 
 ### 🤖 AI 기반 개인화
-- **개인화 훈련 계획**: 사용자 수준과 목표에 맞는 맞춤형 계획
+- **개인화 훈련 계획**: 개인 수준과 목표에 맞는 맞춤형 계획
 - **AI 분석**: 세션 데이터 기반 성과 분석 및 개선점 제안
 - **스마트 추천**: 다음 훈련 세션을 위한 지능형 추천
 
@@ -19,20 +19,20 @@ Next.js 기반의 AI 파워드 속발음 훈련 애플리케이션으로, 개인
 - **성과 리포트**: 상세한 성과 분석 및 트렌드 추적
 - **목표 관리**: 개인 목표 설정 및 달성도 추적
 
-### 🔐 사용자 관리
-- **인증 시스템**: JWT 기반 로그인/회원가입
-- **프로필 관리**: 사용자 정보 및 설정 관리
-- **레벨 시스템**: 초급/중급/고급 레벨별 맞춤 서비스
+### 📝 개인 기록 시스템
+- **개인 노트**: 훈련 과정과 생각을 기록하는 개인 공간
+- **메모 시스템**: 세션별 메모 및 댓글 기능
+- **개인 피드**: 개인적인 훈련 기록과 성과 공유
 
-### 👥 커뮤니티 기능
-- **성취 시스템**: 목표 달성 시 성취 배지 획득
-- **소셜 피드**: 훈련 성과 공유 및 동기부여
-- **댓글 및 좋아요**: 커뮤니티 상호작용
+### 🏆 성취 시스템
+- **성취 배지**: 목표 달성 시 성취 배지 획득
+- **진행 추적**: 단계별 성취 달성 현황
+- **동기부여**: 성취를 통한 지속적인 동기부여
 
-### 🔄 데이터 동기화
-- **실시간 동기화**: 여러 기기 간 데이터 동기화
-- **백업 시스템**: 안전한 데이터 백업 및 복구
-- **오프라인 지원**: 네트워크 없이도 기본 기능 사용
+### 🔄 데이터 관리
+- **로컬 저장**: SQLite 데이터베이스를 통한 안전한 데이터 저장
+- **백업 시스템**: 데이터 백업 및 복구 기능
+- **데이터 내보내기**: 개인 데이터 내보내기 기능
 
 ## 🛠 기술 스택
 
@@ -45,9 +45,8 @@ Next.js 기반의 AI 파워드 속발음 훈련 애플리케이션으로, 개인
 - **Forms**: React Hook Form + Zod
 
 ### Backend
-- **Database**: SQLite (개발) / PostgreSQL (프로덕션)
+- **Database**: SQLite (개발 및 프로덕션)
 - **ORM**: Prisma
-- **Authentication**: JWT + bcryptjs
 - **API**: Next.js API Routes
 
 ### AI & Analytics
@@ -67,7 +66,7 @@ Next.js 기반의 AI 파워드 속발음 훈련 애플리케이션으로, 개인
 
 - Node.js 18+
 - npm 또는 yarn
-- SQLite (개발용)
+- SQLite
 
 ### 설치 및 실행
 
@@ -107,26 +106,25 @@ npm run dev
 reading/
 ├── app/                    # Next.js App Router
 │   ├── api/               # API 라우트
-│   │   ├── auth/          # 인증 관련 API
 │   │   ├── ai/            # AI 분석 API
 │   │   ├── session/       # 세션 관리 API
 │   │   ├── note/          # 노트 관리 API
+│   │   ├── post/          # 개인 기록 API
 │   │   └── ...
 │   ├── dashboard/         # 대시보드 페이지
 │   ├── training/          # 훈련 페이지
-│   ├── community/         # 커뮤니티 페이지
+│   ├── community/         # 개인 기록 페이지
 │   └── achievements/      # 성취 페이지
 ├── components/            # React 컴포넌트
 │   ├── ui/               # ShadCN UI 컴포넌트
-│   ├── Auth/             # 인증 관련 컴포넌트
 │   ├── Dashboard/        # 대시보드 컴포넌트
 │   ├── AI/               # AI 관련 컴포넌트
 │   ├── Training/         # 훈련 관련 컴포넌트
-│   ├── Community/        # 커뮤니티 컴포넌트
+│   ├── Community/        # 개인 기록 컴포넌트
 │   └── ...
 ├── lib/                  # 유틸리티 라이브러리
 │   ├── ai/               # AI 서비스
-│   ├── auth/             # 인증 로직
+│   ├── notes/            # 노트 서비스
 │   ├── prisma.ts         # 데이터베이스 클라이언트
 │   └── ...
 ├── prisma/               # 데이터베이스 스키마
@@ -182,14 +180,13 @@ npm run dev
 ## 📊 데이터베이스 스키마
 
 ### 주요 모델
-- **User**: 사용자 정보 및 설정
 - **Session**: 읽기 세션 데이터
 - **Note**: 실시간 노트 데이터
 - **TrainingPlan**: 개인화된 훈련 계획
 - **Achievement**: 성취 시스템
 - **AIAnalysis**: AI 분석 결과
 - **PerformanceStats**: 성과 통계
-- **Post/Comment/Like**: 커뮤니티 기능
+- **Post/Comment/Like**: 개인 기록 시스템
 
 ## 🧪 테스트
 
@@ -200,46 +197,62 @@ npm test
 # 테스트 감시 모드
 npm run test:watch
 
-# 테스트 커버리지 확인
+# 테스트 커버리지
 npm run test:coverage
 ```
 
 ## 🚀 배포
 
 ### Vercel 배포 (권장)
-1. Vercel 계정 생성
-2. GitHub 저장소 연결
-3. 환경 변수 설정
-4. 자동 배포
 
-### 환경 변수
-```env
-# 데이터베이스
-DATABASE_URL="file:./dev.db"
-
-# 인증
-JWT_SECRET="your-jwt-secret"
-
-# AI 서비스
-OPENAI_API_KEY="your-openai-api-key"
-
-# 기타
-NEXTAUTH_SECRET="your-nextauth-secret"
-NEXTAUTH_URL="http://localhost:3000"
+1. **Vercel CLI 설치**:
+```bash
+npm i -g vercel
 ```
+
+2. **배포**:
+```bash
+vercel
+```
+
+3. **환경 변수 설정**:
+- Vercel 대시보드에서 환경 변수 설정
+- OpenAI API 키 등 필수 설정 추가
+
+### 로컬 프로덕션 빌드
+
+```bash
+npm run build
+npm start
+```
+
+## 📝 주요 변경사항
+
+### v0.2.0 - 인증 시스템 제거
+- **인증 시스템 완전 제거**: 로그인/회원가입 기능 제거
+- **개인 기록용 앱으로 전환**: 단일 사용자 기준으로 설계 변경
+- **데이터베이스 스키마 단순화**: User 모델 제거, 관계 단순화
+- **의존성 최적화**: JWT, bcryptjs 등 인증 관련 패키지 제거
+- **UI/UX 개선**: 인증 관련 UI 제거, 개인 기록 중심으로 재설계
+
+### v0.1.0 - 초기 버전
+- 기본 읽기 훈련 기능
+- AI 분석 및 추천 시스템
+- 실시간 노트 기능
+- 커뮤니티 기능
 
 ## 🤝 기여하기
 
-1. 저장소를 포크합니다
-2. 기능 브랜치를 생성합니다 (`git checkout -b feature/amazing-feature`)
-3. 변경사항을 커밋합니다 (`git commit -m 'Add amazing feature'`)
-4. 브랜치에 푸시합니다 (`git push origin feature/amazing-feature`)
-5. Pull Request를 생성합니다
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## 📄 라이선스
 
-이 프로젝트는 MIT 라이선스 하에 배포됩니다.
+이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 `LICENSE` 파일을 참조하세요.
 
-## 📞 지원
+## 📞 문의
 
-문제가 있거나 질문이 있으시면 이슈를 생성해주세요. 
+프로젝트에 대한 문의사항이 있으시면 이슈를 생성해 주세요. 
