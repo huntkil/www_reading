@@ -1,0 +1,5 @@
+lib/performance/**
+lib/realtime/**
+lib/recommendations/**
+lib/sync/**
+lib/types.ts 

@@ -1,0 +1,181 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// 사용자 모델
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String   // nullable에서 필수로 변경
+  level     String   @default("beginner") // beginner, intermediate, advanced
+  goals     String   // JSON string of goals array
+  preferences String  // JSON string of preferences array
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 관계
+  sessions     Session[]
+  notes        Note[]
+  achievements Achievement[]
+  plans        TrainingPlan[]
+  performanceStats PerformanceStats[]
+  posts        Post[]
+  comments     Comment[]
+  likes        Like[]
+
+  @@map("users")
+}
+
+// 읽기 세션 모델
+model Session {
+  id                String   @id @default(cuid())
+  userId            String
+  title             String   @default("새로운 읽기 세션")
+  description       String?
+  duration          Int      // 분 단위
+  wordCount         Int      @default(0)
+  readingSpeed      Float    @default(0) // 단어/분
+  comprehension     Float    @default(0) // 0-100
+  status            String   @default("completed") // completed, in_progress, paused
+  mcpNotePath       String?  // MCP 노트 경로
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // 관계
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes Note[]
+  aiAnalyses AIAnalysis[]
+  trainingPlans TrainingPlan[]
+
+  @@map("sessions")
+}
+
+// 노트 모델 (MCP 연동)
+model Note {
+  id          String   @id @default(cuid())
+  userId      String
+  sessionId   String?
+  path        String   // MCP 노트 경로
+  content     String
+  metadata    String?  // JSON string of metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 관계
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session Session? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, path])
+  @@map("notes")
+}
+
+// 훈련 계획 모델
+model TrainingPlan {
+  id          String   @id @default(cuid())
+  userId      String
+  sessionId   String?
+  name        String
+  description String?
+  exercises   String   // JSON string of exercises array
+  startDate   DateTime
+  endDate     DateTime?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 관계
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session Session? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("training_plans")
+}
+
+// 성취 모델
+model Achievement {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String   // session_count, speed_improvement, comprehension_improvement, etc.
+  title       String
+  description String
+  icon        String?
+  unlockedAt  DateTime @default(now())
+
+  // 관계
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("achievements")
+}
+
+// AI 분석 결과 모델
+model AIAnalysis {
+  id            String   @id @default(cuid())
+  sessionId     String
+  analysisType  String   // session_analysis, recommendation, plan_generation
+  analysis      String   // JSON string of analysis
+  createdAt     DateTime @default(now())
+
+  // 관계
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("ai_analyses")
+}
+
+// 성과 통계 모델
+model PerformanceStats {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  totalSessions         Int      @default(0)
+  totalDuration         Int      @default(0) // 분 단위
+  totalWordsRead        Int      @default(0)
+  averageComprehension  Float    @default(0)
+  bestComprehension     Int      @default(0)
+  averageSpeed          Float    @default(0) // 단어/분
+  lastSessionDate       DateTime?
+  updatedAt             DateTime @updatedAt
+
+  // 관계
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("performance_stats")
+}
+
+model Post {
+  id        String    @id @default(cuid())
+  content   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  comments  Comment[]
+  likes     Like[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  text      String
+  createdAt DateTime @default(now())
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+
+  @@unique([userId, postId])
+}
