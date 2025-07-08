@@ -5,23 +5,15 @@ import { noteService } from '@/lib/notes/noteService';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
     const sessionId = searchParams.get('sessionId');
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
-      );
-    }
 
     let notes;
     if (sessionId) {
       notes = await noteService.getSessionNotes(sessionId);
     } else {
-      notes = await noteService.getUserNotes(userId, limit, offset);
+      notes = await noteService.getAllNotes(limit, offset);
     }
 
     return NextResponse.json({
@@ -41,17 +33,16 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, sessionId, content, title, tags } = body;
+    const { sessionId, content, title, tags } = body;
 
-    if (!userId || !content) {
+    if (!content) {
       return NextResponse.json(
-        { error: 'userId and content are required' },
+        { error: 'content is required' },
         { status: 400 }
       );
     }
 
     const note = await noteService.createNote({
-      userId,
       sessionId,
       content,
       title,

@@ -1,32 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
 
-// GET /api/achievement - 모든 성취 조회
+// GET /api/achievement - 성취 목록 조회
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const type = searchParams.get('type');
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    // Use Prisma-generated type instead of `any` for stronger type safety
-    const where: Prisma.AchievementWhereInput = {};
-    if (userId) where.userId = userId;
+    const where: any = {};
+    const type = searchParams.get('type');
     if (type) where.type = type;
 
     const achievements = await prisma.achievement.findMany({
       where,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
       orderBy: {
         unlockedAt: 'desc',
       },
@@ -59,25 +46,35 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, type, title, description, icon } = body;
+    const { type, title, description, icon } = body;
 
-    if (!userId || !type || !title || !description) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    // 필수 필드 검증
+    if (!type || !title || !description) {
+      return NextResponse.json(
+        { success: false, error: 'type, title, description는 필수입니다.' },
+        { status: 400 }
+      );
     }
 
-    const newAchievement = await prisma.achievement.create({
+    const achievement = await prisma.achievement.create({
       data: {
-        userId,
         type,
         title,
         description,
-        icon,
+        icon: icon || null,
+        unlockedAt: new Date(),
       },
     });
 
-    return NextResponse.json(newAchievement, { status: 201 });
+    return NextResponse.json({
+      success: true,
+      data: achievement,
+    }, { status: 201 });
   } catch (error) {
-    console.error('Error creating achievement:', error);
-    return NextResponse.json({ error: 'Error creating achievement' }, { status: 500 });
+    console.error('성취 생성 오류:', error);
+    return NextResponse.json(
+      { success: false, error: '성취를 생성할 수 없습니다.' },
+      { status: 500 }
+    );
   }
 } 

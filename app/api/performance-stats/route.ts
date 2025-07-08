@@ -1,117 +1,141 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+// GET /api/performance-stats - 성과 통계 조회
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const offset = parseInt(searchParams.get('offset') || '0');
 
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
-    }
-
-    const stats = await prisma.performanceStats.findUnique({
-      where: { userId },
-    });
-
-    if (!stats) {
-      // If no stats exist for the user, return default/zeroed stats
-      const defaultStats = {
-        userId,
-        totalSessions: 0,
-        totalDuration: 0,
-        totalWordsRead: 0,
-        averageComprehension: 0,
-        bestComprehension: 0,
-        averageSpeed: 0,
-        lastSessionDate: null,
-      };
-      return NextResponse.json(defaultStats);
-    }
-
-    return NextResponse.json(stats);
-  } catch (error) {
-    console.error('Error fetching performance stats:', error);
-    return NextResponse.json({ error: 'Error fetching performance stats' }, { status: 500 });
-  }
-}
-
-// POST /api/performance-stats - 새 성과 통계 생성
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { 
-      userId, 
-      totalSessions, 
-      totalDuration, 
-      totalWordsRead, 
-      averageComprehension, 
-      bestComprehension, 
-      averageSpeed, 
-      lastSessionDate 
-    } = body;
-
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: '사용자 ID가 필요합니다.' },
-        { status: 400 }
-      );
-    }
-
-    // 사용자 존재 확인
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: '존재하지 않는 사용자입니다.' },
-        { status: 404 }
-      );
-    }
-
-    // 이미 성과 통계가 있는지 확인
-    const existingStats = await prisma.performanceStats.findUnique({
-      where: { userId },
-    });
-
-    if (existingStats) {
-      return NextResponse.json(
-        { success: false, error: '이미 성과 통계가 존재합니다. PUT 요청을 사용하세요.' },
-        { status: 409 }
-      );
-    }
-
-    const stats = await prisma.performanceStats.create({
-      data: {
-        userId,
-        totalSessions: totalSessions || 0,
-        totalDuration: totalDuration || 0,
-        totalWordsRead: totalWordsRead || 0,
-        averageComprehension: averageComprehension || 0,
-        bestComprehension: bestComprehension || 0,
-        averageSpeed: averageSpeed || 0,
-        lastSessionDate: lastSessionDate ? new Date(lastSessionDate) : null,
+    const stats = await prisma.performanceStats.findMany({
+      orderBy: {
+        updatedAt: 'desc',
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
+      take: limit,
+      skip: offset,
     });
+
+    const total = await prisma.performanceStats.count();
 
     return NextResponse.json({
       success: true,
       data: stats,
-    }, { status: 201 });
+      pagination: {
+        total,
+        limit,
+        offset,
+        hasMore: offset + limit < total,
+      },
+    });
   } catch (error) {
-    console.error('성과 통계 생성 오류:', error);
+    console.error('성과 통계 조회 오류:', error);
     return NextResponse.json(
-      { success: false, error: '성과 통계를 생성할 수 없습니다.' },
+      { success: false, error: '성과 통계를 조회할 수 없습니다.' },
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/performance-stats - 성과 통계 생성/업데이트
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const {
+      totalSessions,
+      totalDuration,
+      totalWordsRead,
+      averageComprehension,
+      bestComprehension,
+      averageSpeed,
+      lastSessionDate,
+    } = body;
+
+    // 데이터 검증
+    if (totalSessions !== undefined && (typeof totalSessions !== 'number' || totalSessions < 0)) {
+      return NextResponse.json(
+        { success: false, error: 'totalSessions는 0 이상의 숫자여야 합니다.' },
+        { status: 400 }
+      );
+    }
+
+    if (totalDuration !== undefined && (typeof totalDuration !== 'number' || totalDuration < 0)) {
+      return NextResponse.json(
+        { success: false, error: 'totalDuration는 0 이상의 숫자여야 합니다.' },
+        { status: 400 }
+      );
+    }
+
+    if (totalWordsRead !== undefined && (typeof totalWordsRead !== 'number' || totalWordsRead < 0)) {
+      return NextResponse.json(
+        { success: false, error: 'totalWordsRead는 0 이상의 숫자여야 합니다.' },
+        { status: 400 }
+      );
+    }
+
+    if (averageComprehension !== undefined && (typeof averageComprehension !== 'number' || averageComprehension < 0 || averageComprehension > 100)) {
+      return NextResponse.json(
+        { success: false, error: 'averageComprehension는 0-100 사이의 숫자여야 합니다.' },
+        { status: 400 }
+      );
+    }
+
+    if (bestComprehension !== undefined && (typeof bestComprehension !== 'number' || bestComprehension < 0 || bestComprehension > 100)) {
+      return NextResponse.json(
+        { success: false, error: 'bestComprehension는 0-100 사이의 숫자여야 합니다.' },
+        { status: 400 }
+      );
+    }
+
+    if (averageSpeed !== undefined && (typeof averageSpeed !== 'number' || averageSpeed < 0)) {
+      return NextResponse.json(
+        { success: false, error: 'averageSpeed는 0 이상의 숫자여야 합니다.' },
+        { status: 400 }
+      );
+    }
+
+    // 기존 통계 확인
+    const existingStats = await prisma.performanceStats.findFirst();
+
+    let stats;
+    if (existingStats) {
+      // 기존 통계 업데이트
+      stats = await prisma.performanceStats.update({
+        where: { id: existingStats.id },
+        data: {
+          totalSessions: totalSessions ?? existingStats.totalSessions,
+          totalDuration: totalDuration ?? existingStats.totalDuration,
+          totalWordsRead: totalWordsRead ?? existingStats.totalWordsRead,
+          averageComprehension: averageComprehension ?? existingStats.averageComprehension,
+          bestComprehension: bestComprehension ?? existingStats.bestComprehension,
+          averageSpeed: averageSpeed ?? existingStats.averageSpeed,
+          lastSessionDate: lastSessionDate ? new Date(lastSessionDate) : existingStats.lastSessionDate,
+          updatedAt: new Date(),
+        },
+      });
+    } else {
+      // 새 통계 생성
+      stats = await prisma.performanceStats.create({
+        data: {
+          totalSessions: totalSessions || 0,
+          totalDuration: totalDuration || 0,
+          totalWordsRead: totalWordsRead || 0,
+          averageComprehension: averageComprehension || 0,
+          bestComprehension: bestComprehension || 0,
+          averageSpeed: averageSpeed || 0,
+          lastSessionDate: lastSessionDate ? new Date(lastSessionDate) : null,
+        },
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: stats,
+    }, { status: existingStats ? 200 : 201 });
+  } catch (error) {
+    console.error('성과 통계 생성/업데이트 오류:', error);
+    return NextResponse.json(
+      { success: false, error: '성과 통계를 생성/업데이트할 수 없습니다.' },
       { status: 500 }
     );
   }

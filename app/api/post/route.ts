@@ -1,88 +1,122 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyAuth } from '@/lib/auth/utils';
 
+// GET /api/post - 포스트 목록 조회
 export async function GET(request: NextRequest) {
   try {
-    const verification = await verifyAuth(request);
-    const userId = verification.user?.id;
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const offset = parseInt(searchParams.get('offset') || '0');
 
     const posts = await prisma.post.findMany({
-      orderBy: { createdAt: 'desc' },
       include: {
-        author: {
-          select: { id: true, name: true, email: true },
-        },
         comments: {
-          include: {
-            author: {
-              select: { id: true, name: true, email: true },
-            },
-          },
           orderBy: {
             createdAt: 'asc',
           },
         },
         likes: true,
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: limit,
+      skip: offset,
     });
 
-    const postsWithLikeStatus = posts.map(post => {
-      const likedByMe = userId ? post.likes.some(like => like.userId === userId) : false;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { likes, ...rest } = post;
-      return {
-        ...rest,
-        likedByMe,
-        _count: {
-          likes: post.likes.length,
-          comments: post.comments.length,
-        },
-      };
-    });
+    // 응답 데이터 가공
+    const processedPosts = posts.map(post => ({
+      id: post.id,
+      content: post.content,
+      createdAt: post.createdAt.toISOString(),
+      comments: post.comments.map(comment => ({
+        id: comment.id,
+        text: comment.text,
+        createdAt: comment.createdAt.toISOString(),
+      })),
+      _count: {
+        likes: post.likes.length,
+        comments: post.comments.length,
+      },
+      likedByMe: false, // 개인 기록용이므로 항상 false
+    }));
 
-    return NextResponse.json({ posts: postsWithLikeStatus });
+    const total = await prisma.post.count();
+
+    return NextResponse.json({
+      success: true,
+      data: processedPosts,
+      pagination: {
+        total,
+        limit,
+        offset,
+        hasMore: offset + limit < total,
+      },
+    });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
+    console.error('포스트 목록 조회 오류:', error);
+    return NextResponse.json(
+      { success: false, error: '포스트 목록을 조회할 수 없습니다.' },
+      { status: 500 }
+    );
   }
 }
 
-// POST a new post
+// POST /api/post - 새 포스트 생성
 export async function POST(request: NextRequest) {
   try {
-    const verification = await verifyAuth(request);
-    if (!verification.user) {
-      return NextResponse.json({ success: false, error: verification.error }, { status: verification.status });
-    }
-    const userId = verification.user.id;
-    
-    const { content } = await request.json();
+    const body = await request.json();
+    const { content } = body;
 
-    if (!content) {
+    // 필수 필드 검증
+    if (!content || typeof content !== 'string' || content.trim().length === 0) {
       return NextResponse.json(
-        { success: false, error: 'Content is required.' },
+        { success: false, error: 'content는 필수이며 비어있을 수 없습니다.' },
         { status: 400 }
       );
     }
 
-    const newPost = await prisma.post.create({
+    if (content.length > 1000) {
+      return NextResponse.json(
+        { success: false, error: 'content는 1000자 이하여야 합니다.' },
+        { status: 400 }
+      );
+    }
+
+    const post = await prisma.post.create({
       data: {
-        content,
-        authorId: userId,
+        content: content.trim(),
       },
-       include: {
-        author: {
-          select: { id: true, name: true, email: true },
-        },
+      include: {
+        comments: true,
+        likes: true,
       },
     });
 
-    return NextResponse.json({ success: true, data: newPost }, { status: 201 });
+    const processedPost = {
+      id: post.id,
+      content: post.content,
+      createdAt: post.createdAt.toISOString(),
+      comments: post.comments.map(comment => ({
+        id: comment.id,
+        text: comment.text,
+        createdAt: comment.createdAt.toISOString(),
+      })),
+      _count: {
+        likes: post.likes.length,
+        comments: post.comments.length,
+      },
+      likedByMe: false,
+    };
+
+    return NextResponse.json({
+      success: true,
+      data: processedPost,
+    }, { status: 201 });
   } catch (error) {
-    console.error('Error creating post:', error);
+    console.error('포스트 생성 오류:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to create post.' },
+      { success: false, error: '포스트를 생성할 수 없습니다.' },
       { status: 500 }
     );
   }

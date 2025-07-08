@@ -5,22 +5,11 @@ import { prisma } from '@/lib/prisma';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    const where = userId ? { userId } : {};
-
     const sessions = await prisma.session.findMany({
-      where,
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
         notes: {
           select: {
             id: true,
@@ -43,7 +32,7 @@ export async function GET(request: NextRequest) {
       skip: offset,
     });
 
-    const total = await prisma.session.count({ where });
+    const total = await prisma.session.count();
 
     return NextResponse.json({
       success: true,
@@ -68,15 +57,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, title, description, duration, wordCount, readingSpeed, comprehension } = body;
-
-    // 필수 필드 검증
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: '사용자 ID가 필요합니다.' },
-        { status: 400 }
-      );
-    }
+    const { title, description, duration, wordCount, readingSpeed, comprehension } = body;
 
     // 데이터 타입 및 범위 검증
     if (duration !== undefined && (typeof duration !== 'number' || duration < 0)) {
@@ -122,21 +103,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 사용자 존재 확인
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: '존재하지 않는 사용자입니다.' },
-        { status: 404 }
-      );
-    }
-
     const session = await prisma.session.create({
       data: {
-        userId,
         title: title || '새로운 읽기 세션',
         description: description || '',
         duration: duration || 0,
@@ -144,15 +112,6 @@ export async function POST(request: NextRequest) {
         readingSpeed: readingSpeed || 0,
         comprehension: comprehension || 0,
         status: 'completed',
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
       },
     });
 

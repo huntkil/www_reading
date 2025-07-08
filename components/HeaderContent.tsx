@@ -1,17 +1,15 @@
 "use client";
 
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from './ui/button';
 import { ThemeToggle } from './ThemeToggle';
 
-import { Loader2, Home, BarChart3, Users, BookOpen, Trophy, Menu } from 'lucide-react';
+import { Home, BarChart3, Users, BookOpen, Trophy, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 
 export function HeaderContent() {
-  const { user, isAuthenticated, isLoading, logout, openAuthModal } = useAuth();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -90,58 +88,9 @@ export function HeaderContent() {
                   </Link>
                 );
               })}
-              
-              <div className="border-t pt-4 mt-4">
-                {isLoading ? (
-                  <div className="flex items-center space-x-3 px-3 py-2">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span className="text-sm">로딩 중...</span>
-                  </div>
-                ) : isAuthenticated ? (
-                  <div className="space-y-2">
-                    <div className="px-3 py-2 text-sm text-muted-foreground">
-                      안녕하세요, {user?.name}님
-                    </div>
-                    <Button 
-                      onClick={() => {
-                        logout();
-                        handleMobileNavClick();
-                      }} 
-                      variant="outline" 
-                      className="w-full justify-start"
-                    >
-                      로그아웃
-                    </Button>
-                  </div>
-                ) : (
-                  <Button 
-                    onClick={() => {
-                      openAuthModal();
-                      handleMobileNavClick();
-                    }} 
-                    className="w-full justify-start"
-                  >
-                    로그인
-                  </Button>
-                )}
-              </div>
             </div>
           </SheetContent>
         </Sheet>
-        
-        {/* 데스크톱 인증 버튼 */}
-        <div className="hidden md:flex items-center space-x-3">
-          {isLoading ? (
-            <Loader2 className="h-6 w-6 animate-spin" />
-          ) : isAuthenticated ? (
-            <>
-              <span className="text-sm font-medium">안녕하세요, {user?.name}님</span>
-              <Button onClick={() => logout()} variant="outline" size="sm">로그아웃</Button>
-            </>
-          ) : (
-            <Button onClick={openAuthModal} size="sm">로그인</Button>
-          )}
-        </div>
       </div>
     </>
   );

@@ -6,18 +6,6 @@
  * 중복을 피하고 일관성을 유지하기 위해 이곳에서 타입을 관리합니다.
  */
 
-// From contexts/AuthContext.tsx & app/page.tsx
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  level: string;
-  goals: string;
-  preferences: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 // From app/page.tsx
 export interface DashboardStats {
   totalSessions: number;
@@ -41,25 +29,17 @@ export interface TrainingPlan {
   content: string;
 }
 
-// From components/Community/types.ts
-export interface Author {
-  id: string;
-  name: string;
-  email: string;
-}
-
+// From components/Community/types.ts - 개인 기록용으로 단순화
 export interface Comment {
   id: string;
   text: string;
   createdAt: string;
-  author: Author;
 }
 
 export interface Post {
   id: string;
   content: string;
   createdAt: string;
-  author: Author;
   comments: Comment[];
   _count: {
     likes: number;

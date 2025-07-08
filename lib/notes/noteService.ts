@@ -2,7 +2,6 @@ import { prisma } from '@/lib/prisma';
 
 export interface NoteData {
   id?: string;
-  userId: string;
   sessionId?: string;
   content: string;
   title?: string;
@@ -12,17 +11,21 @@ export interface NoteData {
 export class NoteService {
   // 노트 생성
   async createNote(data: NoteData) {
+    const noteData: any = {
+      content: data.content,
+      path: data.title || `note_${Date.now()}`,
+      metadata: JSON.stringify({
+        title: data.title,
+        tags: data.tags || []
+      })
+    };
+
+    if (data.sessionId) {
+      noteData.sessionId = data.sessionId;
+    }
+
     return await prisma.note.create({
-      data: {
-        userId: data.userId,
-        sessionId: data.sessionId,
-        content: data.content,
-        path: data.title || `note_${Date.now()}`,
-        metadata: JSON.stringify({
-          title: data.title,
-          tags: data.tags || []
-        })
-      }
+      data: noteData
     });
   }
 
@@ -44,10 +47,9 @@ export class NoteService {
     });
   }
 
-  // 사용자 노트 목록
-  async getUserNotes(userId: string, limit = 50, offset = 0) {
+  // 모든 노트 목록
+  async getAllNotes(limit = 50, offset = 0) {
     return await prisma.note.findMany({
-      where: { userId },
       orderBy: { updatedAt: 'desc' },
       take: limit,
       skip: offset
@@ -63,10 +65,9 @@ export class NoteService {
   }
 
   // 노트 검색
-  async searchNotes(userId: string, query: string, limit = 10) {
+  async searchNotes(query: string, limit = 10) {
     return await prisma.note.findMany({
       where: {
-        userId,
         content: {
           contains: query
         }
