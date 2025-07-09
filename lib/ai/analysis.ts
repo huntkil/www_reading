@@ -74,7 +74,7 @@ interface PerformanceAnalysis {
 // AI 기능 완전 비활성화: 항상 Mock 응답만 반환
 
 export async function analyzeSession(sessionData?: Session, userProfile?: User): Promise<AnalysisResult> {
-  console.log('AI 분석 요청:', { sessionData, userProfile });
+
   
   // Mock 응답 생성
   const mockAnalysis = {
@@ -132,7 +132,7 @@ export async function analyzeSession(sessionData?: Session, userProfile?: User):
     }
   };
 
-  console.log('AI 분석 완료:', mockAnalysis);
+
   return mockAnalysis;
 }
 
@@ -213,7 +213,7 @@ export async function generateRealTimeFeedback(
   currentSession: Session
 ): Promise<string> {
   try {
-    console.log('실시간 피드백 생성 시작');
+  
     
     // 현재 세션 데이터를 기반으로 실시간 피드백 생성
     const duration = currentSession?.duration || 0;
@@ -247,7 +247,7 @@ export async function generateRealTimeFeedback(
       feedback = '좋은 페이스를 유지하고 있습니다. 계속 진행해주세요.';
     }
     
-    console.log('실시간 피드백 생성 완료:', feedback);
+  
     return feedback;
   } catch (error) {
     console.error('실시간 피드백 생성 실패:', error);
@@ -260,7 +260,7 @@ export async function analyzePerformance(
   sessionHistory: Session[]
 ): Promise<PerformanceAnalysis> {
   try {
-    console.log('성과 분석 시작:', { sessionHistory });
+  
     
     if (!sessionHistory || sessionHistory.length === 0) {
       return {
@@ -324,7 +324,7 @@ export async function analyzePerformance(
       ]
     };
     
-    console.log('성과 분석 완료:', analysis);
+  
     return analysis;
   } catch (error) {
     console.error('성과 분석 실패:', error);

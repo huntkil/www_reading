@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { sessionData, userProfile } = body;
 
-    console.log('AI 분석 요청:', { sessionData, userProfile });
+  
 
     // 입력 검증
     if (!sessionData || !userProfile) {
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       userProfile
     });
 
-    console.log('AI 분석 완료:', analysis);
+  
 
     return NextResponse.json({
       success: true,

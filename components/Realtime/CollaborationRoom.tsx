@@ -34,7 +34,7 @@ export function CollaborationRoom() {
   const handleSendMessage = useCallback(() => {
     if (newMessage.trim()) {
       // Logic to send message would go here
-      console.log('Sending message:', newMessage);
+  
       setNewMessage('');
     }
   }, [newMessage]);

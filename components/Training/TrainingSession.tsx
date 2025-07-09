@@ -26,7 +26,7 @@ interface TrainingStep {
   }>
 }
 
-interface TrainingModule {
+export interface TrainingModule {
   id: string
   title: string
   description: string
@@ -399,15 +399,7 @@ export function TrainingSession({
   const readingContent = selectedChapter?.content || currentStep.readingText
   const readingQuestions = selectedChapter?.questions || currentStep.questions
 
-  // 디버깅 로그
-  console.log('=== TrainingSession Debug ===')
-  console.log('selectedModule:', selectedModule)
-  console.log('selectedChapter:', selectedChapter)
-  console.log('currentModule:', currentModule)
-  console.log('currentStep:', currentStep)
-  console.log('sessionState:', sessionState)
-  console.log('현재 표시되는 내용:', selectedChapter ? '선택한 리딩 자료' : '기본 모듈 내용')
-  console.log('=============================')
+
 
   const startExercise = () => {
     console.log('=== startExercise ===')
@@ -419,21 +411,27 @@ export function TrainingSession({
   }
 
   const startReading = () => {
-    console.log('=== startReading ===')
-    console.log('readingContent:', readingContent?.substring(0, 100) + '...')
+    console.log('=== startReading 버튼 클릭 ===')
+    console.log('현재 상태:', sessionState)
+    console.log('읽기 시작 시간 설정:', new Date().toISOString())
     setSessionState('reading')
     setReadingStartTime(Date.now())
   }
 
   const finishReading = () => {
-    console.log('=== finishReading ===')
-    console.log('readingQuestions:', readingQuestions)
+    console.log('=== finishReading 버튼 클릭 ===')
+    console.log('읽기 종료 시간 설정:', new Date().toISOString())
+    console.log('이해도 퀴즈 단계로 이동')
     setReadingEndTime(Date.now())
     setSessionState('comprehension')
     setAnswers([])
   }
 
   const handleAnswerChange = (index: number, value: number) => {
+    console.log('=== 답변 변경 ===')
+    console.log('문제 번호:', index + 1)
+    console.log('선택한 답변:', value)
+    console.log('기존 답변들:', answers)
     const newAnswers = [...answers]
     newAnswers[index] = value
     setAnswers(newAnswers)
@@ -453,7 +451,11 @@ export function TrainingSession({
   }
 
   const submitComprehension = () => {
+    console.log('=== 이해도 퀴즈 제출 버튼 클릭 ===')
+    console.log('선택한 답변들:', answers)
+    
     const score = calculateComprehensionScore()
+    console.log('계산된 이해도 점수:', score + '%')
     setComprehensionScore(score)
     
     // WPM 계산 - 선택한 리딩 자료 또는 기본 텍스트 사용
@@ -461,10 +463,14 @@ export function TrainingSession({
       const readingTime = (readingEndTime - readingStartTime) / 1000 / 60 // 분 단위
       const wordCount = readingContent.split(/\s+/).length
       const calculatedWpm = Math.round(wordCount / readingTime)
+      console.log('계산된 WPM:', calculatedWpm)
+      console.log('읽기 시간:', readingTime.toFixed(2) + '분')
+      console.log('단어 수:', wordCount)
       setWpm(calculatedWpm)
     }
     
     setSessionState('complete')
+    console.log('훈련 완료 상태로 변경')
     
     // 피드백 메시지 생성
     if (score >= 80) {
@@ -477,7 +483,12 @@ export function TrainingSession({
   }
 
   const nextStep = () => {
+    console.log('=== 다음 단계 버튼 클릭 ===')
+    console.log('현재 단계 인덱스:', currentStepIndex)
+    console.log('전체 단계 수:', currentModule.steps.length)
+    
     if (currentStepIndex < currentModule.steps.length - 1) {
+      console.log('다음 단계로 이동:', currentStepIndex + 1)
       setCurrentStepIndex(currentStepIndex + 1)
       setSessionState('lesson')
       setAnswers([])
@@ -485,11 +496,17 @@ export function TrainingSession({
       setWpm(0)
       setFeedbackMessage(null)
     } else {
+      console.log('모든 단계 완료, 세션 종료')
       handleSessionComplete()
     }
   }
 
   const handleSessionComplete = () => {
+    console.log('=== 세션 완료 ===')
+    console.log('최종 WPM:', wpm)
+    console.log('최종 이해도:', comprehensionScore + '%')
+    console.log('완료한 모듈:', currentModule.title)
+    
     onSessionComplete({
       wpm,
       accuracy: comprehensionScore,
@@ -514,24 +531,49 @@ export function TrainingSession({
   };
 
   const togglePause = () => {
+    console.log('=== 일시정지/재개 버튼 클릭 ===')
+    console.log('현재 일시정지 상태:', isPaused)
+    console.log('새로운 일시정지 상태:', !isPaused)
     setIsPaused(!isPaused);
   };
 
   const resetExercise = () => {
+    console.log('=== 연습 재시작 버튼 클릭 ===')
+    console.log('타이머 초기화:', currentModule.duration * 60 + '초')
+    console.log('일시정지 해제')
     setTimeLeft(currentModule.duration * 60);
     setIsPaused(false);
   };
 
   const increaseTextSize = () => {
-    if (textSize === 'small') setTextSize('medium');
-    else if (textSize === 'medium') setTextSize('large');
-    else if (textSize === 'large') setTextSize('xlarge');
+    console.log('=== 텍스트 크기 증가 버튼 클릭 ===')
+    console.log('현재 텍스트 크기:', textSize)
+    if (textSize === 'small') {
+      console.log('텍스트 크기를 medium으로 변경')
+      setTextSize('medium');
+    } else if (textSize === 'medium') {
+      console.log('텍스트 크기를 large로 변경')
+      setTextSize('large');
+    } else if (textSize === 'large') {
+      console.log('텍스트 크기를 xlarge로 변경')
+      setTextSize('xlarge');
+    }
   };
 
   const decreaseTextSize = () => {
-    if (textSize === 'xlarge') setTextSize('large');
-    else if (textSize === 'large') setTextSize('medium');
-    else if (textSize === 'medium') setTextSize('small');
+    console.log('=== 텍스트 크기 감소 버튼 클릭 ===')
+    console.log('현재 텍스트 크기:', textSize)
+    
+    if (textSize === 'xlarge') {
+      console.log('텍스트 크기를 large로 변경')
+      setTextSize('large');
+    } else if (textSize === 'large') {
+      console.log('텍스트 크기를 medium으로 변경')
+      setTextSize('medium');
+    } else if (textSize === 'medium') {
+      console.log('텍스트 크기를 small로 변경')
+      setTextSize('small');
+    }
   };
 
   const getTextSizeClass = () => {

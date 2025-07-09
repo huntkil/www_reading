@@ -13,16 +13,12 @@ interface ReadingSelectorProps {
 }
 
 export function ReadingSelector({ onChapterSelect }: ReadingSelectorProps) {
-  const [selectedChapter, setSelectedChapter] = useState<ReadingChapter | null>(null)
 
   const handleChapterSelect = (chapter: ReadingChapter) => {
-    setSelectedChapter(chapter)
-  }
-
-  const startReading = () => {
-    if (selectedChapter) {
-      onChapterSelect(selectedChapter)
-    }
+    console.log('=== 리딩 자료 선택 ===')
+    console.log('선택한 챕터:', chapter.title)
+    console.log('바로 읽기 시작')
+    onChapterSelect(chapter)
   }
 
   const getDifficultyColor = (difficulty: string) => {
@@ -39,14 +35,10 @@ export function ReadingSelector({ onChapterSelect }: ReadingSelectorProps) {
   }
 
   const renderChapterCard = (chapter: ReadingChapter) => {
-    const isSelected = selectedChapter?.id === chapter.id
-    
     return (
       <Card 
         key={chapter.id} 
-        className={`cursor-pointer transition-all hover:shadow-lg ${
-          isSelected ? 'ring-2 ring-primary' : ''
-        }`}
+        className="cursor-pointer transition-all hover:shadow-lg"
         onClick={() => handleChapterSelect(chapter)}
       >
         <CardHeader className="pb-3">
@@ -116,18 +108,7 @@ export function ReadingSelector({ onChapterSelect }: ReadingSelectorProps) {
         </TabsContent>
       </Tabs>
 
-      {selectedChapter && (
-        <div className="flex justify-center">
-          <Button 
-            onClick={startReading}
-            size="lg"
-            className="px-8"
-          >
-            <ArrowRight className="mr-2 h-4 w-4" />
-            {selectedChapter.title} 읽기 시작
-          </Button>
-        </div>
-      )}
+
     </div>
   )
 } 

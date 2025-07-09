@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { userProfile, preferences } = body;
 
-    console.log('AI 콘텐츠 추천 요청:', { userProfile, preferences });
+  
 
     // 입력 검증
     if (!userProfile || !preferences) {
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     // AI 콘텐츠 추천
     const recommendations = await recommendContent(userProfile, preferences);
 
-    console.log('AI 콘텐츠 추천 완료:', recommendations);
+  
 
     return NextResponse.json({
       success: true,

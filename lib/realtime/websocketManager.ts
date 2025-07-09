@@ -22,7 +22,7 @@ export class WebSocketManager {
         this.ws = new WebSocket(`${this.url}?userId=${this.userId}`);
         
         this.ws.onopen = () => {
-          console.log('WebSocket connected');
+      
           this.isConnected = true;
           this.reconnectAttempts = 0;
           this.processMessageQueue();
@@ -40,7 +40,7 @@ export class WebSocketManager {
         };
 
         this.ws.onclose = (event) => {
-          console.log('WebSocket disconnected:', event.code, event.reason);
+      
           this.isConnected = false;
           this.emit('disconnected', event);
           
@@ -184,7 +184,7 @@ export class WebSocketManager {
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
     
-    console.log(`Scheduling reconnect attempt ${this.reconnectAttempts} in ${delay}ms`);
+
     
     setTimeout(() => {
       if (!this.isConnected) {

@@ -12,7 +12,7 @@ export function SessionRecordForm({ userId, onSessionComplete }: SessionRecordFo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ userId, wpm, accuracy });
+
     // API call to save the session would go here
 
     if (onSessionComplete) {

@@ -57,7 +57,7 @@ export class BackupManager {
       // Clean old backups
       await this.cleanOldBackups();
 
-      console.log(`Backup created successfully: ${backupPath}`);
+  
       return backupPath;
     } catch (error) {
       console.error('Backup failed:', error);
@@ -161,7 +161,7 @@ export class BackupManager {
         await fs.writeFile(filePath, file.content);
       }
 
-      console.log(`Backup restored successfully to: ${targetPath}`);
+  
     } catch (error) {
       console.error('Backup restore failed:', error);
       throw error;
@@ -183,7 +183,7 @@ export class BackupManager {
           
           if (stats.mtime < cutoffDate) {
             await fs.unlink(filePath);
-            console.log(`Deleted old backup: ${file}`);
+        
           }
         }
       }

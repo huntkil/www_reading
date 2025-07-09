@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -8,49 +8,30 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 
 import { Brain, Eye, Target, BookOpen, Play, CheckCircle, HelpCircle, GraduationCap, FileText } from "lucide-react"
-import { TrainingSession } from '@/components/Training/TrainingSession'
-import { ModuleSelector } from '@/components/Training/ModuleSelector'
+import { TrainingSession, TrainingModule } from '@/components/Training/TrainingSession'
+
 import { ReadingSelector } from '@/components/Training/ReadingSelector'
 import { ReadingTraining } from '@/components/Training/ReadingTraining'
 import { TrainingPlan } from '@/lib/types'
 import { ReadingChapter } from '@/lib/readingMaterials'
 import TrainingHelpModal from '@/components/Training/TrainingHelpModal'
 
-interface TrainingModule {
-  id: string;
-  title: string;
-  description: string;
-  difficulty: string;
-  duration: number;
-  icon: React.ComponentType;
-  steps: Array<{
-    id: string;
-    title: string;
-    type: string;
-    content: string;
-    readingText?: string;
-    questions?: Array<{
-      question: string;
-      options: string[];
-      correct: number;
-    }>;
-  }>;
-}
 
-type TrainingStep = 'select-type' | 'select-module' | 'select-reading' | 'training'
+
+type TrainingStep = 'select-type' | 'select-module' | 'select-reading' | 'training' | 'reading-training'
 type TrainingType = 'module' | 'reading'
 
 export default function TrainingPage() {
   const [currentStep, setCurrentStep] = useState<TrainingStep>('select-type')
   const [trainingType, setTrainingType] = useState<TrainingType | null>(null)
-  const [selectedModule, setSelectedModule] = useState<TrainingModule | null>(null)
+
   const [plan, setPlan] = useState<TrainingPlan | null>(null)
   const [selectedChapter, setSelectedChapter] = useState<ReadingChapter | null>(null)
-  const [isReadingStarted, setIsReadingStarted] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   // 훈련 모듈 정의
-  const trainingModules = [
+  const trainingModules: TrainingModule[] = [
     {
       id: 'module1',
       title: "기초 속발음 제어 훈련",
@@ -254,73 +235,96 @@ export default function TrainingPage() {
   ]
 
   const handleTrainingTypeSelect = (type: TrainingType) => {
+    console.log('=== 훈련 유형 선택 ===')
+    console.log('선택한 훈련 유형:', type)
     setTrainingType(type)
     if (type === 'reading') {
+      console.log('학습용 리딩 선택 - 리딩 선택 단계로 이동')
       setCurrentStep('select-reading')
     } else {
+      console.log('단계별 훈련 선택 - 모듈 선택 단계로 이동')
       setCurrentStep('select-module')
     }
   }
 
-  const handleModuleSelect = (module: TrainingModule) => {
-    console.log('=== handleModuleSelect ===')
-    console.log('selected module:', module)
-    setSelectedModule(module)
-    setCurrentStep('select-reading')
-  }
+
 
   const handleReadingSelect = (chapter: ReadingChapter) => {
-    console.log('=== handleReadingSelect ===')
-    console.log('selected chapter:', chapter)
+    console.log('=== 학습 자료 선택 ===')
+    console.log('선택한 챕터:', chapter.title)
+    console.log('챕터 난이도:', chapter.difficulty)
+    console.log('챕터 제목:', chapter.title)
     setSelectedChapter(chapter)
-    setCurrentStep('training')
-  }
-
-  const handleStartTraining = () => {
-    console.log('=== handleStartTraining ===')
-    console.log('selectedModule:', selectedModule)
-    console.log('selectedChapter:', selectedChapter)
-    if (selectedModule) {
-      setPlan({
-        title: selectedModule.title,
+    
+    if (trainingType === 'reading') {
+      // 학습용 리딩의 경우 바로 읽기 훈련 단계로 이동
+      console.log('학습용 리딩 - 바로 읽기 훈련 시작')
+      setCurrentStep('reading-training')
+    } else {
+      // 단계별 훈련의 경우 훈련 계획 생성 후 훈련 단계로 이동
+      console.log('단계별 훈련 - 훈련 계획 생성 중...')
+      const newPlan: TrainingPlan = {
+        title: trainingModules[0].title,
         targetWpm: 300,
-        duration: selectedModule.duration,
-        content: selectedModule.description
-      })
+        duration: trainingModules[0].duration,
+        content: trainingModules[0].description
+      }
+      console.log('생성된 훈련 계획:', newPlan)
+      setPlan(newPlan)
+      setCurrentStep('training')
     }
   }
 
+
+
+
+
   const handleSessionComplete = () => {
+    console.log('=== 훈련 세션 완료 ===')
+    console.log('훈련 초기화 중...')
     resetTraining()
   }
 
   const handleReadingComplete = () => {
+    console.log('=== 리딩 완료 ===')
+    console.log('훈련 초기화 중...')
     resetTraining()
   }
 
   const resetTraining = () => {
+    console.log('=== 훈련 상태 초기화 ===')
+    console.log('모든 상태를 초기값으로 리셋')
     setCurrentStep('select-type')
     setTrainingType(null)
-    setSelectedModule(null)
     setPlan(null)
     setSelectedChapter(null)
-    setIsReadingStarted(false)
   }
 
   const goBack = () => {
+    console.log('=== 뒤로가기 버튼 클릭 ===')
+    console.log('현재 단계:', currentStep)
+    
     if (currentStep === 'select-module') {
+      console.log('모듈 선택 → 훈련 유형 선택으로 이동')
       setCurrentStep('select-type')
       setTrainingType(null)
     } else if (currentStep === 'select-reading') {
       if (trainingType === 'module') {
+        console.log('리딩 선택 → 모듈 선택으로 이동')
         setCurrentStep('select-module')
       } else {
+        console.log('리딩 선택 → 훈련 유형 선택으로 이동')
         setCurrentStep('select-type')
         setTrainingType(null)
       }
     } else if (currentStep === 'training') {
+      console.log('훈련 → 리딩 선택으로 이동')
       setCurrentStep('select-reading')
       setPlan(null)
+      setSelectedChapter(null)
+    } else if (currentStep === 'reading-training') {
+      console.log('리딩 훈련 → 리딩 선택으로 이동')
+      setCurrentStep('select-reading')
       setSelectedChapter(null)
     }
   }
@@ -474,14 +478,15 @@ export default function TrainingPage() {
         </div>
 
         <TrainingHelpModal 
-          isOpen={showHelp} 
-          onClose={() => setShowHelp(false)}
-          exerciseName="읽기 훈련"
-          sessionType="custom"
+          open={showHelp} 
+          onOpenChange={setShowHelp}
+          selectedHelpKey="읽기 훈련"
         />
       </div>
     )
   }
+
+
 
   // 훈련 모듈 선택 화면
   if (currentStep === 'select-module') {
@@ -491,7 +496,6 @@ export default function TrainingPage() {
           {/* 헤더 */}
           <div className="mb-8">
             <Button variant="outline" onClick={goBack} className="mb-4">
-              {/* <ArrowLeft className="mr-2 h-4 w-4" /> */} {/* Removed as per edit hint */}
               뒤로 가기
             </Button>
             
@@ -511,7 +515,47 @@ export default function TrainingPage() {
           </div>
 
           {/* 모듈 선택 */}
-          <ModuleSelector modules={trainingModules} onModuleSelect={handleModuleSelect} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {trainingModules.map((module) => (
+              <Card 
+                key={module.id}
+                className="cursor-pointer hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50 group"
+                onClick={() => {
+                  console.log('=== 훈련 모듈 선택 ===')
+                  console.log('선택한 모듈:', module.title)
+                  setCurrentStep('select-reading')
+                }}
+              >
+                <CardHeader className="text-center">
+                  <div className="mx-auto mb-4 p-4 bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    {module.id === 'module1' && <Brain className="h-8 w-8 text-primary" />}
+                    {module.id === 'module2' && <Eye className="h-8 w-8 text-primary" />}
+                    {module.id === 'module3' && <Target className="h-8 w-8 text-primary" />}
+                  </div>
+                  <CardTitle className="text-xl">{module.title}</CardTitle>
+                  <CardDescription className="text-sm">
+                    {module.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline">{module.difficulty}</Badge>
+                      <Badge variant="secondary">{module.duration}분</Badge>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <span className="text-sm">단계별 학습</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <span className="text-sm">{module.steps.length}개 단계</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     )
@@ -551,6 +595,45 @@ export default function TrainingPage() {
     )
   }
 
+  // 학습용 리딩 훈련 화면
+  if (currentStep === 'reading-training') {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto">
+          {/* 헤더 */}
+          <div className="mb-8">
+            <Button variant="outline" onClick={goBack} className="mb-4">
+              뒤로 가기
+            </Button>
+            
+            <div className="text-center space-y-4">
+              <h1 className="text-3xl font-bold">리딩 훈련</h1>
+              <p className="text-lg text-muted-foreground">선택한 리딩 자료로 훈련을 시작합니다</p>
+            </div>
+
+            {/* 진행 상태 */}
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">리딩 훈련</span>
+                <span className="text-sm text-muted-foreground">4/4</span>
+              </div>
+              <Progress value={100} className="h-2" />
+            </div>
+          </div>
+
+          {/* 리딩 훈련 컴포넌트 */}
+          {selectedChapter && (
+            <ReadingTraining 
+              chapter={selectedChapter} 
+              onComplete={handleReadingComplete}
+              onBack={resetTraining}
+            />
+          )}
+        </div>
+      </div>
+    )
+  }
+
   // 훈련 시작 화면
   if (currentStep === 'training') {
     return (
@@ -578,100 +661,9 @@ export default function TrainingPage() {
             </div>
           </div>
 
-          {/* 훈련 시작 카드 */}
-          {selectedModule && !plan && trainingType === 'module' && (
-            <Card className="max-w-2xl mx-auto">
-              <CardHeader className="text-center">
-                <CardTitle className="flex items-center justify-center gap-2">
-                  <selectedModule.icon className="h-6 w-6" />
-                  {selectedModule.title}
-                </CardTitle>
-                <CardDescription className="text-base">
-                  {selectedModule.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <p className="text-sm text-muted-foreground">난이도</p>
-                    <Badge variant="outline" className="mt-1">{selectedModule.difficulty}</Badge>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">소요 시간</p>
-                    <p className="text-lg font-semibold mt-1">{selectedModule.duration}분</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">단계 수</p>
-                    <p className="text-lg font-semibold mt-1">{selectedModule.steps.length}단계</p>
-                  </div>
-                </div>
 
-                {selectedChapter && (
-                  <div className="bg-primary/10 border border-primary/20 p-4 rounded-lg">
-                    <h4 className="font-semibold mb-2 text-primary">📚 선택된 학습 자료</h4>
-                    <p className="text-sm font-medium">
-                      {selectedChapter.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      출처: {selectedChapter.source} | 유형: {selectedChapter.type === 'fiction' ? '소설' : '비소설'} | 난이도: {selectedChapter.difficulty}
-                    </p>
-                  </div>
-                )}
 
-                <Alert>
-                  <AlertDescription>
-                    <strong>훈련 준비 완료!</strong> 선택한 모듈과 리딩 자료로 훈련을 시작할 준비가 되었습니다.
-                  </AlertDescription>
-                </Alert>
 
-                <Button onClick={handleStartTraining} size="lg" className="w-full">
-                  <Play className="mr-2 h-4 w-4" />
-                  훈련 시작하기
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {selectedChapter && trainingType === 'reading' && !isReadingStarted && (
-            <Card className="max-w-2xl mx-auto">
-              <CardHeader className="text-center">
-                <CardTitle className="flex items-center justify-center gap-2">
-                  <BookOpen className="h-6 w-6" />
-                  {selectedChapter.title}
-                </CardTitle>
-                <CardDescription className="text-base">
-                  {selectedChapter.source} - {selectedChapter.type === 'fiction' ? '소설' : '비소설'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <p className="text-sm text-muted-foreground">유형</p>
-                    <Badge variant="outline" className="mt-1">{selectedChapter.type === 'fiction' ? '소설' : '비소설'}</Badge>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">난이도</p>
-                    <Badge variant="outline" className="mt-1">{selectedChapter.difficulty}</Badge>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">예상 시간</p>
-                    <p className="text-lg font-semibold mt-1">5-10분</p>
-                  </div>
-                </div>
-
-                <Alert>
-                  <AlertDescription>
-                    <strong>리딩 준비 완료!</strong> 선택한 리딩 자료로 학습을 시작할 준비가 되었습니다.
-                  </AlertDescription>
-                </Alert>
-
-                <Button onClick={() => setIsReadingStarted(true)} size="lg" className="w-full">
-                  <Play className="mr-2 h-4 w-4" />
-                  리딩 시작하기
-                </Button>
-              </CardContent>
-            </Card>
-          )}
 
           {/* 훈련 컴포넌트 */}
           {plan && trainingType === 'module' && (
@@ -705,7 +697,7 @@ export default function TrainingPage() {
               
               <TrainingSession 
                 plan={plan} 
-                selectedModule={selectedModule}
+                selectedModule={trainingModules[0]}
                 selectedChapter={selectedChapter}
                 onSessionComplete={handleSessionComplete}
                 onBack={resetTraining}
@@ -713,13 +705,7 @@ export default function TrainingPage() {
             </div>
           )}
           
-          {selectedChapter && trainingType === 'reading' && isReadingStarted && (
-            <ReadingTraining 
-              chapter={selectedChapter} 
-              onComplete={handleReadingComplete}
-              onBack={resetTraining}
-            />
-          )}
+
         </div>
       </div>
     )
@@ -737,10 +723,9 @@ export default function TrainingPage() {
       </div>
 
       <TrainingHelpModal 
-        isOpen={showHelp} 
-        onClose={() => setShowHelp(false)}
-        exerciseName="읽기 훈련"
-        sessionType="custom"
+        open={showHelp} 
+        onOpenChange={setShowHelp}
+        selectedHelpKey="읽기 훈련"
       />
     </>
   )
