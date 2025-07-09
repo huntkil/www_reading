@@ -3,7 +3,7 @@
 import { Button } from './ui/button';
 import { ThemeToggle } from './ThemeToggle';
 
-import { BarChart3, Users, BookOpen, Trophy, Menu } from 'lucide-react';
+import { BookOpen, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -14,10 +14,7 @@ export function HeaderContent() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigationItems = [
-    { href: '/', label: '대시보드', icon: BarChart3 },
     { href: '/training', label: '훈련', icon: BookOpen },
-    { href: '/community', label: '커뮤니티', icon: Users },
-    { href: '/achievements', label: '성취', icon: Trophy },
   ];
 
   const handleMobileNavClick = () => {
@@ -27,7 +24,7 @@ export function HeaderContent() {
   return (
     <>
       <div className="flex items-center space-x-6">
-        <Link href="/" className="font-bold text-lg flex items-center space-x-2">
+        <Link href="/training" className="font-bold text-lg flex items-center space-x-2">
           <BookOpen className="h-6 w-6" />
           <span className="hidden sm:inline">Subvocalization Coaching</span>
           <span className="sm:hidden">SVC</span>

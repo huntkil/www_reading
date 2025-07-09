@@ -355,349 +355,344 @@ export default function TrainingPage() {
     )
   }
 
-  // 훈련 유형 선택 화면
-  if (currentStep === 'select-type') {
-    return (
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          {/* 헤더 */}
-          <div className="text-center space-y-4 mb-12">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              읽기 훈련 시작
-            </h1>
-            <p className="text-xl text-muted-foreground">
-              원하는 훈련 방식을 선택하여 읽기 능력을 향상시키세요
-            </p>
-            <Button variant="outline" onClick={() => setShowHelp(true)}>
-              <HelpCircle className="mr-2 h-4 w-4" />
-              도움말
-            </Button>
-          </div>
-
-          {/* 진행 상태 */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">{getStepTitle()}</span>
-              <span className="text-sm text-muted-foreground">{getStepNumber()}</span>
+        {/* 진행 상황 표시 */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-2xl font-bold">읽기 훈련</h1>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowHelp(true)}
+                className="flex items-center space-x-2"
+              >
+                <HelpCircle className="h-4 w-4" />
+                <span>도움말</span>
+              </Button>
             </div>
-            <Progress value={getStepProgress()} className="h-2" />
-            <p className="text-sm text-muted-foreground mt-2">{getStepDescription()}</p>
           </div>
-
-          {/* 훈련 유형 선택 카드 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Card 
-              className="cursor-pointer hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50 group"
-              onClick={() => handleTrainingTypeSelect('module')}
-            >
-              <CardHeader className="text-center">
-                <div className="mx-auto mb-4 p-4 bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                  <GraduationCap className="h-8 w-8 text-primary" />
-                </div>
-                <CardTitle className="text-2xl">단계별 훈련</CardTitle>
-                <CardDescription className="text-base">
-                  체계적인 단계별 훈련으로 읽기 기법을 마스터하세요
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-sm">기초부터 고급까지 단계별 학습</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-sm">이론과 실습을 통한 체계적 훈련</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-sm">진행 상황 추적 및 성과 분석</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card 
-              className="cursor-pointer hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50 group"
-              onClick={() => handleTrainingTypeSelect('reading')}
-            >
-              <CardHeader className="text-center">
-                <div className="mx-auto mb-4 p-4 bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                  <FileText className="h-8 w-8 text-primary" />
-                </div>
-                <CardTitle className="text-2xl">학습용 리딩</CardTitle>
-                <CardDescription className="text-base">
-                  다양한 주제의 리딩 자료로 실전 읽기 능력을 향상시키세요
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-sm">다양한 주제와 난이도의 자료</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-sm">실시간 읽기 속도 측정</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-sm">이해도 확인 및 피드백</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="flex items-center space-x-4 mb-4">
+            <span className="text-sm text-muted-foreground">단계 {getStepNumber()}/4</span>
+            <Progress value={getStepProgress()} className="flex-1" />
+            <span className="text-sm font-medium">{getStepTitle()}</span>
           </div>
+          <p className="text-sm text-muted-foreground">{getStepDescription()}</p>
         </div>
 
-        <TrainingHelpModal 
-          open={showHelp} 
-          onOpenChange={setShowHelp}
-          selectedHelpKey="읽기 훈련"
-        />
-      </div>
-    )
-  }
-
-
-
-  // 훈련 모듈 선택 화면
-  if (currentStep === 'select-module') {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          {/* 헤더 */}
-          <div className="mb-8">
-            <Button variant="outline" onClick={goBack} className="mb-4">
-              뒤로 가기
-            </Button>
-            
-            <div className="text-center space-y-4">
-              <h1 className="text-3xl font-bold">{getStepTitle()}</h1>
-              <p className="text-lg text-muted-foreground">{getStepDescription()}</p>
-            </div>
-
-            {/* 진행 상태 */}
-            <div className="mt-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">{getStepTitle()}</span>
-                <span className="text-sm text-muted-foreground">{getStepNumber()}</span>
+        {/* 훈련 타입 선택 */}
+        {currentStep === 'select-type' && (
+          <div className="space-y-6">
+            {/* 훈련 타입 선택 가이드 */}
+            <div className="bg-blue-50 border border-blue-200 dark:bg-blue-950 dark:border-blue-800 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <HelpCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">💡 훈련 방법 선택 가이드</h3>
+                  <p className="text-blue-800 dark:text-blue-200 text-sm">
+                    <strong>모듈 훈련:</strong> 체계적인 단계별 학습을 원한다면 선택하세요. 이론부터 실습까지 체계적으로 진행됩니다.<br/>
+                    <strong>리딩 훈련:</strong> 다양한 읽기 자료로 직접 훈련하고 싶다면 선택하세요. 선택한 텍스트로 즉시 훈련을 시작합니다.
+                  </p>
+                </div>
               </div>
-              <Progress value={getStepProgress()} className="h-2" />
             </div>
-          </div>
 
-          {/* 모듈 선택 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {trainingModules.map((module) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card 
-                key={module.id}
-                className="cursor-pointer hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50 group"
-                onClick={() => {
-                  setCurrentStep('select-reading')
-                }}
+                className={`cursor-pointer transition-all hover:shadow-lg ${
+                  trainingType === 'module' ? 'ring-2 ring-primary' : ''
+                }`}
+                onClick={() => handleTrainingTypeSelect('module')}
               >
-                <CardHeader className="text-center">
-                  <div className="mx-auto mb-4 p-4 bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    {module.id === 'module1' && <Brain className="h-8 w-8 text-primary" />}
-                    {module.id === 'module2' && <Eye className="h-8 w-8 text-primary" />}
-                    {module.id === 'module3' && <Target className="h-8 w-8 text-primary" />}
+                <CardHeader>
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <GraduationCap className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <CardTitle>모듈 훈련</CardTitle>
+                      <CardDescription>체계적인 단계별 학습</CardDescription>
+                    </div>
                   </div>
-                  <CardTitle className="text-xl">{module.title}</CardTitle>
-                  <CardDescription className="text-sm">
-                    {module.description}
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Badge variant="outline">{module.difficulty}</Badge>
-                      <Badge variant="secondary">{module.duration}분</Badge>
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>이론부터 실습까지 체계적 진행</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      <span className="text-sm">단계별 학습</span>
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>단계별 이해도 확인</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      <span className="text-sm">{module.steps.length}개 단계</span>
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>개인 맞춤형 학습 경로</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-    )
-  }
 
-  // 학습용 리딩 선택 화면
-  if (currentStep === 'select-reading') {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          {/* 헤더 */}
-          <div className="mb-8">
-            <Button variant="outline" onClick={goBack} className="mb-4">
-              {/* <ArrowLeft className="mr-2 h-4 w-4" /> */} {/* Removed as per edit hint */}
-              뒤로 가기
-            </Button>
-            
-            <div className="text-center space-y-4">
-              <h1 className="text-3xl font-bold">{getStepTitle()}</h1>
-              <p className="text-lg text-muted-foreground">{getStepDescription()}</p>
-            </div>
-
-            {/* 진행 상태 */}
-            <div className="mt-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">{getStepTitle()}</span>
-                <span className="text-sm text-muted-foreground">{getStepNumber()}</span>
-              </div>
-              <Progress value={getStepProgress()} className="h-2" />
-            </div>
-          </div>
-
-          {/* 리딩 선택 */}
-          <ReadingSelector onChapterSelect={handleReadingSelect} />
-        </div>
-      </div>
-    )
-  }
-
-  // 학습용 리딩 훈련 화면
-  if (currentStep === 'reading-training') {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          {/* 헤더 */}
-          <div className="mb-8">
-            <Button variant="outline" onClick={goBack} className="mb-4">
-              뒤로 가기
-            </Button>
-            
-            <div className="text-center space-y-4">
-              <h1 className="text-3xl font-bold">리딩 훈련</h1>
-              <p className="text-lg text-muted-foreground">선택한 리딩 자료로 훈련을 시작합니다</p>
-            </div>
-
-            {/* 진행 상태 */}
-            <div className="mt-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">리딩 훈련</span>
-                <span className="text-sm text-muted-foreground">4/4</span>
-              </div>
-              <Progress value={100} className="h-2" />
-            </div>
-          </div>
-
-          {/* 리딩 훈련 컴포넌트 */}
-          {selectedChapter && (
-            <ReadingTraining 
-              chapter={selectedChapter} 
-              onComplete={handleReadingComplete}
-              onBack={resetTraining}
-            />
-          )}
-        </div>
-      </div>
-    )
-  }
-
-  // 훈련 시작 화면
-  if (currentStep === 'training') {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          {/* 헤더 */}
-          <div className="mb-8">
-            <Button variant="outline" onClick={goBack} className="mb-4">
-              {/* <ArrowLeft className="mr-2 h-4 w-4" /> */} {/* Removed as per edit hint */}
-              뒤로 가기
-            </Button>
-            
-            <div className="text-center space-y-4">
-              <h1 className="text-3xl font-bold">{getStepTitle()}</h1>
-              <p className="text-lg text-muted-foreground">{getStepDescription()}</p>
-            </div>
-
-            {/* 진행 상태 */}
-            <div className="mt-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">{getStepTitle()}</span>
-                <span className="text-sm text-muted-foreground">{getStepNumber()}</span>
-              </div>
-              <Progress value={getStepProgress()} className="h-2" />
-            </div>
-          </div>
-
-
-
-
-
-          {/* 훈련 컴포넌트 */}
-          {plan && trainingType === 'module' && (
-            <div className="space-y-6">
-              {/* 선택된 리딩 자료 정보 */}
-              {selectedChapter && (
-                <Card className="max-w-2xl mx-auto">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <BookOpen className="h-5 w-5" />
-                      선택된 학습 자료
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div>
-                        <h4 className="font-semibold">{selectedChapter.title}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {selectedChapter.source} • {selectedChapter.type === 'fiction' ? '소설' : '비소설'} • {selectedChapter.difficulty}
-                        </p>
-                      </div>
-                      <div className="bg-muted/50 p-3 rounded-lg">
-                        <p className="text-sm">
-                          <strong>내용 미리보기:</strong> {selectedChapter.content.substring(0, 200)}...
-                        </p>
-                      </div>
+              <Card 
+                className={`cursor-pointer transition-all hover:shadow-lg ${
+                  trainingType === 'reading' ? 'ring-2 ring-primary' : ''
+                }`}
+                onClick={() => handleTrainingTypeSelect('reading')}
+              >
+                <CardHeader>
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <BookOpen className="h-6 w-6 text-green-600" />
                     </div>
-                  </CardContent>
-                </Card>
+                    <div>
+                      <CardTitle>리딩 훈련</CardTitle>
+                      <CardDescription>다양한 읽기 자료로 직접 훈련</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>즉시 훈련 시작</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>다양한 주제와 난이도</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>실용적인 읽기 능력 향상</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* 훈련 모듈 선택 화면 */}
+        {currentStep === 'select-module' && (
+          <div className="container mx-auto px-4 py-8">
+            <div className="max-w-6xl mx-auto">
+              {/* 헤더 */}
+              <div className="mb-8">
+                <Button variant="outline" onClick={goBack} className="mb-4">
+                  뒤로 가기
+                </Button>
+                
+                <div className="text-center space-y-4">
+                  <h1 className="text-3xl font-bold">{getStepTitle()}</h1>
+                  <p className="text-lg text-muted-foreground">{getStepDescription()}</p>
+                </div>
+
+                {/* 진행 상태 */}
+                <div className="mt-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">{getStepTitle()}</span>
+                    <span className="text-sm text-muted-foreground">{getStepNumber()}</span>
+                  </div>
+                  <Progress value={getStepProgress()} className="h-2" />
+                </div>
+              </div>
+
+              {/* 모듈 선택 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {trainingModules.map((module) => (
+                  <Card 
+                    key={module.id}
+                    className="cursor-pointer hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50 group"
+                    onClick={() => {
+                      setCurrentStep('select-reading')
+                    }}
+                  >
+                    <CardHeader className="text-center">
+                      <div className="mx-auto mb-4 p-4 bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                        {module.id === 'module1' && <Brain className="h-8 w-8 text-primary" />}
+                        {module.id === 'module2' && <Eye className="h-8 w-8 text-primary" />}
+                        {module.id === 'module3' && <Target className="h-8 w-8 text-primary" />}
+                      </div>
+                      <CardTitle className="text-xl">{module.title}</CardTitle>
+                      <CardDescription className="text-sm">
+                        {module.description}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Badge variant="outline">{module.difficulty}</Badge>
+                          <Badge variant="secondary">{module.duration}분</Badge>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <span className="text-sm">단계별 학습</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <span className="text-sm">{module.steps.length}개 단계</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 학습용 리딩 선택 화면 */}
+        {currentStep === 'select-reading' && (
+          <div className="container mx-auto px-4 py-8">
+            <div className="max-w-6xl mx-auto">
+              {/* 헤더 */}
+              <div className="mb-8">
+                <Button variant="outline" onClick={goBack} className="mb-4">
+                  {/* <ArrowLeft className="mr-2 h-4 w-4" /> */} {/* Removed as per edit hint */}
+                  뒤로 가기
+                </Button>
+                
+                <div className="text-center space-y-4">
+                  <h1 className="text-3xl font-bold">{getStepTitle()}</h1>
+                  <p className="text-lg text-muted-foreground">{getStepDescription()}</p>
+                </div>
+
+                {/* 진행 상태 */}
+                <div className="mt-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">{getStepTitle()}</span>
+                    <span className="text-sm text-muted-foreground">{getStepNumber()}</span>
+                  </div>
+                  <Progress value={getStepProgress()} className="h-2" />
+                </div>
+              </div>
+
+              {/* 리딩 선택 */}
+              <ReadingSelector onChapterSelect={handleReadingSelect} />
+            </div>
+          </div>
+        )}
+
+        {/* 학습용 리딩 훈련 화면 */}
+        {currentStep === 'reading-training' && (
+          <div className="container mx-auto px-4 py-8">
+            <div className="max-w-6xl mx-auto">
+              {/* 헤더 */}
+              <div className="mb-8">
+                <Button variant="outline" onClick={goBack} className="mb-4">
+                  뒤로 가기
+                </Button>
+                
+                <div className="text-center space-y-4">
+                  <h1 className="text-3xl font-bold">리딩 훈련</h1>
+                  <p className="text-lg text-muted-foreground">선택한 리딩 자료로 훈련을 시작합니다</p>
+                </div>
+
+                {/* 진행 상태 */}
+                <div className="mt-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">리딩 훈련</span>
+                    <span className="text-sm text-muted-foreground">4/4</span>
+                  </div>
+                  <Progress value={100} className="h-2" />
+                </div>
+              </div>
+
+              {/* 리딩 훈련 컴포넌트 */}
+              {selectedChapter && (
+                <ReadingTraining 
+                  chapter={selectedChapter} 
+                  onComplete={handleReadingComplete}
+                  onBack={resetTraining}
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 훈련 시작 화면 */}
+        {currentStep === 'training' && (
+          <div className="container mx-auto px-4 py-8">
+            <div className="max-w-6xl mx-auto">
+              {/* 헤더 */}
+              <div className="mb-8">
+                <Button variant="outline" onClick={goBack} className="mb-4">
+                  {/* <ArrowLeft className="mr-2 h-4 w-4" /> */} {/* Removed as per edit hint */}
+                  뒤로 가기
+                </Button>
+                
+                <div className="text-center space-y-4">
+                  <h1 className="text-3xl font-bold">{getStepTitle()}</h1>
+                  <p className="text-lg text-muted-foreground">{getStepDescription()}</p>
+                </div>
+
+                {/* 진행 상태 */}
+                <div className="mt-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">{getStepTitle()}</span>
+                    <span className="text-sm text-muted-foreground">{getStepNumber()}</span>
+                  </div>
+                  <Progress value={getStepProgress()} className="h-2" />
+                </div>
+              </div>
+
+
+
+
+
+              {/* 훈련 컴포넌트 */}
+              {plan && trainingType === 'module' && (
+                <div className="space-y-6">
+                  {/* 선택된 리딩 자료 정보 */}
+                  {selectedChapter && (
+                    <Card className="max-w-2xl mx-auto">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-lg">
+                          <BookOpen className="h-5 w-5" />
+                          선택된 학습 자료
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          <div>
+                            <h4 className="font-semibold">{selectedChapter.title}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {selectedChapter.source} • {selectedChapter.type === 'fiction' ? '소설' : '비소설'} • {selectedChapter.difficulty}
+                            </p>
+                          </div>
+                          <div className="bg-muted/50 p-3 rounded-lg">
+                            <p className="text-sm">
+                              <strong>내용 미리보기:</strong> {selectedChapter.content.substring(0, 200)}...
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                  
+                  <TrainingSession 
+                    plan={plan} 
+                    selectedModule={trainingModules[0]}
+                    selectedChapter={selectedChapter}
+                    onSessionComplete={handleSessionComplete}
+                    onBack={resetTraining}
+                  />
+                </div>
               )}
               
-              <TrainingSession 
-                plan={plan} 
-                selectedModule={trainingModules[0]}
-                selectedChapter={selectedChapter}
-                onSessionComplete={handleSessionComplete}
-                onBack={resetTraining}
-              />
+
             </div>
-          )}
-          
-
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="text-muted-foreground">훈련을 준비하고 있습니다...</p>
           </div>
-        </div>
-      </div>
+        )}
 
-      <TrainingHelpModal 
-        open={showHelp} 
-        onOpenChange={setShowHelp}
-        selectedHelpKey="읽기 훈련"
-      />
-    </>
+        {/* 도움말 모달 */}
+        <TrainingHelpModal
+          open={showHelp}
+          onOpenChange={setShowHelp}
+          selectedHelpKey="훈련 세션"
+        />
+      </div>
+    </div>
   )
 } 

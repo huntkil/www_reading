@@ -378,22 +378,49 @@ export function TrainingSession({
   onSessionComplete, 
   onBack 
 }: TrainingSessionProps) {
-  const [currentModuleIndex] = useState(0)
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
-  const [sessionState, setSessionState] = useState<'lesson' | 'exercise' | 'reading' | 'comprehension' | 'complete'>('lesson')
-  const [timeLeft, setTimeLeft] = useState(0)
-  const [isPaused, setIsPaused] = useState(false)
+  const [currentPhase, setCurrentPhase] = useState<'lesson' | 'exercise' | 'reading' | 'comprehension' | 'complete'>('lesson')
+  const [exerciseStartTime, setExerciseStartTime] = useState<number | null>(null)
   const [readingStartTime, setReadingStartTime] = useState<number | null>(null)
   const [readingEndTime, setReadingEndTime] = useState<number | null>(null)
-  const [answers, setAnswers] = useState<(number | string)[]>([])
+  const [elapsedTime, setElapsedTime] = useState(0)
+  const [timeLeft, setTimeLeft] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
+  const [answers, setAnswers] = useState<number[]>([])
   const [comprehensionScore, setComprehensionScore] = useState(0)
   const [wpm, setWpm] = useState(0)
   const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
-  const [showHelpModal, setShowHelpModal] = useState(false)
   const [textSize, setTextSize] = useState<'small' | 'medium' | 'large' | 'xlarge'>('medium')
+  const [showHelpModal, setShowHelpModal] = useState(false)
+  const [helpKey, setHelpKey] = useState('')
 
-  const currentModule = selectedModule || trainingModules[currentModuleIndex]
+  const currentModule = selectedModule || trainingModules[0]
   const currentStep = currentModule.steps[currentStepIndex]
+
+  // 현재 단계에 따른 도움말 키 설정
+  useEffect(() => {
+    if (currentStep) {
+      switch (currentStep.type) {
+        case 'lesson':
+          setHelpKey('인지 병목 현상 이해')
+          break
+        case 'exercise':
+          if (currentStep.title.includes('청킹')) {
+            setHelpKey('의미 단위 읽기')
+          } else if (currentStep.title.includes('페이서')) {
+            setHelpKey('페이서 훈련')
+          } else {
+            setHelpKey('훈련 세션')
+          }
+          break
+        case 'reading':
+          setHelpKey('적응적 속도 훈련')
+          break
+        default:
+          setHelpKey('훈련 세션')
+      }
+    }
+  }, [currentStep])
 
   // 선택한 리딩 자료가 있으면 해당 내용을 사용 (reading 단계에서만)
   const readingContent = selectedChapter?.content || currentStep.readingText
@@ -402,20 +429,18 @@ export function TrainingSession({
 
 
   const startExercise = () => {
-    setSessionState('exercise')
-    setTimeLeft(currentModule.duration * 60)
-    setIsPaused(false)
+    setCurrentPhase('exercise')
+    setExerciseStartTime(Date.now())
   }
 
   const startReading = () => {
-    setSessionState('reading')
+    setCurrentPhase('reading')
     setReadingStartTime(Date.now())
   }
 
   const finishReading = () => {
     setReadingEndTime(Date.now())
-    setSessionState('comprehension')
-    setAnswers([])
+    setCurrentPhase('comprehension')
   }
 
   const handleAnswerChange = (index: number, value: number) => {
@@ -439,7 +464,6 @@ export function TrainingSession({
 
   const submitComprehension = () => {
     const score = calculateComprehensionScore()
-    setComprehensionScore(score)
     
     // WPM 계산 - 선택한 리딩 자료 또는 기본 텍스트 사용
     if (readingStartTime && readingEndTime && readingContent) {
@@ -449,7 +473,8 @@ export function TrainingSession({
       setWpm(calculatedWpm)
     }
     
-    setSessionState('complete')
+    // 세션 완료 처리
+    setCurrentPhase('complete')
     
     // 피드백 메시지 생성
     if (score >= 80) {
@@ -464,7 +489,7 @@ export function TrainingSession({
   const nextStep = () => {
     if (currentStepIndex < currentModule.steps.length - 1) {
       setCurrentStepIndex(currentStepIndex + 1)
-      setSessionState('lesson')
+      setCurrentPhase('lesson')
       setAnswers([])
       setComprehensionScore(0)
       setWpm(0)
@@ -484,13 +509,13 @@ export function TrainingSession({
 
   // 타이머 효과
   useEffect(() => {
-    if (timeLeft > 0 && sessionState === 'exercise' && !isPaused) {
+    if (timeLeft > 0 && currentPhase === 'exercise' && !isPaused) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (timeLeft === 0 && sessionState === 'exercise') {
+    } else if (timeLeft === 0 && currentPhase === 'exercise') {
       startReading();
     }
-  }, [timeLeft, sessionState, isPaused]);
+  }, [timeLeft, currentPhase, isPaused]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -537,7 +562,7 @@ export function TrainingSession({
     }
   };
 
-  if (sessionState === 'complete') {
+  if (currentPhase === 'complete') {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
         <Card className="max-w-md">
@@ -596,245 +621,264 @@ export function TrainingSession({
   }
 
   return (
-    <div className="p-4 md:p-8">
-      <Card className="max-w-4xl mx-auto">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <currentModule.icon className="h-5 w-5" />
-                {currentModule.title}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {currentStep.title} - {currentModule.description}
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      {/* 헤더 */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Button variant="outline" size="sm" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            뒤로
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">{currentModule.title}</h1>
+            <p className="text-muted-foreground">{currentModule.description}</p>
+          </div>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowHelpModal(true)}
+            className="flex items-center space-x-2"
+          >
+            <HelpCircle className="h-4 w-4" />
+            <span>도움말</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* 진행 상황 */}
+      <div className="space-y-2">
+        <div className="flex justify-between text-sm">
+          <span>단계 {currentStepIndex + 1} / {currentModule.steps.length}</span>
+          <span>{currentStep.title}</span>
+        </div>
+        <Progress value={(currentStepIndex / currentModule.steps.length) * 100} />
+      </div>
+
+      {/* 현재 단계별 도움말 카드 */}
+      {currentPhase === 'lesson' && (
+        <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
+          <HelpCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <AlertDescription className="text-blue-800 dark:text-blue-200">
+            <strong>💡 학습 팁:</strong> {getCurrentStepHelp()}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* 현재 단계 내용 */}
+      {currentPhase === 'lesson' && (
+        <div className="space-y-6">
+          {/* 선택된 리딩 자료 정보 표시 */}
+          {selectedChapter && (
+            <div className="bg-primary/10 border border-primary/20 p-4 rounded-lg">
+              <h4 className="font-semibold mb-2 text-primary">📚 선택된 학습 자료</h4>
+              <p className="text-sm font-medium">
+                {selectedChapter.title}
               </p>
-              <div className="flex items-center gap-2 mt-2">
-                <Badge variant="outline">{currentModule.difficulty}</Badge>
-                <Badge variant="secondary">{currentModule.duration}분</Badge>
-                <Badge variant="outline">단계 {currentStepIndex + 1}/{currentModule.steps.length}</Badge>
+              <p className="text-xs text-muted-foreground mt-1">
+                출처: {selectedChapter.source} | 유형: {selectedChapter.type === 'fiction' ? '소설' : '비소설'} | 난이도: {selectedChapter.difficulty}
+              </p>
+            </div>
+          )}
+          
+          {/* 선택한 리딩 자료의 내용 표시 */}
+          {selectedChapter && (
+            <div className="bg-muted p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold">읽을 텍스트:</h3>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={decreaseTextSize}
+                    disabled={textSize === 'small'}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ZoomOut className="h-4 w-4" />
+                  </Button>
+                  <span className="text-xs text-muted-foreground min-w-[40px] text-center">
+                    {textSize === 'small' ? '작게' : textSize === 'medium' ? '보통' : textSize === 'large' ? '크게' : '아주 크게'}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={increaseTextSize}
+                    disabled={textSize === 'xlarge'}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ZoomIn className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className={`${getTextSizeClass()} leading-relaxed`}>
+                {selectedChapter.content}
               </div>
             </div>
-            <div className="flex items-center gap-2">
+          )}
+          
+          <Button onClick={startExercise} className="w-full">
+            <Play className="h-4 w-4 mr-2" />
+            훈련 시작
+          </Button>
+        </div>
+      )}
+
+      {currentPhase === 'exercise' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                onClick={() => setShowHelpModal(true)}
-                className="h-8 w-8 p-0"
+                onClick={togglePause}
               >
-                <HelpCircle className="h-4 w-4" />
+                {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+                {isPaused ? '계속' : '일시정지'}
               </Button>
-              {onBack && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onBack}
-                  className="h-8 w-8 p-0"
-                  title="훈련 종료"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resetExercise}
+              >
+                <RotateCcw className="h-4 w-4" />
+                재시작
+              </Button>
+            </div>
+            <div className="text-2xl font-mono">
+              {formatTime(timeLeft)}
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          {sessionState === 'lesson' && (
-            <div className="space-y-6">
-              {/* 선택된 리딩 자료 정보 표시 */}
-              {selectedChapter && (
-                <div className="bg-primary/10 border border-primary/20 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-2 text-primary">📚 선택된 학습 자료</h4>
-                  <p className="text-sm font-medium">
-                    {selectedChapter.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    출처: {selectedChapter.source} | 유형: {selectedChapter.type === 'fiction' ? '소설' : '비소설'} | 난이도: {selectedChapter.difficulty}
-                  </p>
-                </div>
-              )}
-              
-              {/* 선택한 리딩 자료의 내용 표시 */}
-              {selectedChapter && (
-                <div className="bg-muted p-4 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold">읽을 텍스트:</h3>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={decreaseTextSize}
-                        disabled={textSize === 'small'}
-                        className="h-8 w-8 p-0"
-                      >
-                        <ZoomOut className="h-4 w-4" />
-                      </Button>
-                      <span className="text-xs text-muted-foreground min-w-[40px] text-center">
-                        {textSize === 'small' ? '작게' : textSize === 'medium' ? '보통' : textSize === 'large' ? '크게' : '아주 크게'}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={increaseTextSize}
-                        disabled={textSize === 'xlarge'}
-                        className="h-8 w-8 p-0"
-                      >
-                        <ZoomIn className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  <div className={`${getTextSizeClass()} leading-relaxed`}>
-                    {selectedChapter.content}
-                  </div>
-                </div>
-              )}
-              
-              <Button onClick={startExercise} className="w-full">
-                <Play className="h-4 w-4 mr-2" />
-                훈련 시작
-              </Button>
-            </div>
-          )}
-
-          {sessionState === 'exercise' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
+          
+          {/* 선택한 리딩 자료의 내용 표시 */}
+          {selectedChapter && (
+            <div className="bg-muted p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold">읽을 텍스트:</h3>
+                <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={togglePause}
+                    onClick={decreaseTextSize}
+                    disabled={textSize === 'small'}
+                    className="h-8 w-8 p-0"
                   >
-                    {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-                    {isPaused ? '계속' : '일시정지'}
+                    <ZoomOut className="h-4 w-4" />
                   </Button>
+                  <span className="text-xs text-muted-foreground min-w-[40px] text-center">
+                    {textSize === 'small' ? '작게' : textSize === 'medium' ? '보통' : textSize === 'large' ? '크게' : '아주 크게'}
+                  </span>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={resetExercise}
+                    onClick={increaseTextSize}
+                    disabled={textSize === 'xlarge'}
+                    className="h-8 w-8 p-0"
                   >
-                    <RotateCcw className="h-4 w-4" />
-                    재시작
+                    <ZoomIn className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="text-2xl font-mono">
-                  {formatTime(timeLeft)}
-                </div>
               </div>
-              
-              {/* 선택한 리딩 자료의 내용 표시 */}
-              {selectedChapter && (
-                <div className="bg-muted p-4 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold">읽을 텍스트:</h3>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={decreaseTextSize}
-                        disabled={textSize === 'small'}
-                        className="h-8 w-8 p-0"
-                      >
-                        <ZoomOut className="h-4 w-4" />
-                      </Button>
-                      <span className="text-xs text-muted-foreground min-w-[40px] text-center">
-                        {textSize === 'small' ? '작게' : textSize === 'medium' ? '보통' : textSize === 'large' ? '크게' : '아주 크게'}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={increaseTextSize}
-                        disabled={textSize === 'xlarge'}
-                        className="h-8 w-8 p-0"
-                      >
-                        <ZoomIn className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  <div className={`${getTextSizeClass()} leading-relaxed`}>
-                    {selectedChapter.content}
-                  </div>
-                </div>
-              )}
-              
-              <Progress value={(currentModule.duration * 60 - timeLeft) / (currentModule.duration * 60) * 100} />
+              <div className={`${getTextSizeClass()} leading-relaxed`}>
+                {selectedChapter.content}
+              </div>
             </div>
           )}
+          
+          <Progress value={(currentModule.duration * 60 - timeLeft) / (currentModule.duration * 60) * 100} />
+        </div>
+      )}
 
-          {sessionState === 'reading' && (
-            <div className="space-y-6">
-              <div className="bg-muted p-4 rounded-lg">
-                <h3 className="font-semibold mb-2">
-                  {selectedChapter ? '선택된 리딩 자료:' : '읽을 텍스트:'}
-                </h3>
-                {selectedChapter && (
-                  <div className="mb-4 p-3 bg-primary/10 rounded-lg">
-                    <h4 className="font-medium text-primary">{selectedChapter.title}</h4>
-                    <p className="text-xs text-muted-foreground">
-                      {selectedChapter.source} • {selectedChapter.type === 'fiction' ? '소설' : '비소설'} • {selectedChapter.difficulty}
-                    </p>
-                  </div>
-                )}
-                <div className="text-sm leading-relaxed">
-                  {selectedChapter ? selectedChapter.content : currentStep.readingText}
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  텍스트를 읽은 후 아래 버튼을 클릭하세요.
+      {currentPhase === 'reading' && (
+        <div className="space-y-6">
+          <div className="bg-muted p-4 rounded-lg">
+            <h3 className="font-semibold mb-2">
+              {selectedChapter ? '선택된 리딩 자료:' : '읽을 텍스트:'}
+            </h3>
+            {selectedChapter && (
+              <div className="mb-4 p-3 bg-primary/10 rounded-lg">
+                <h4 className="font-medium text-primary">{selectedChapter.title}</h4>
+                <p className="text-xs text-muted-foreground">
+                  {selectedChapter.source} • {selectedChapter.type === 'fiction' ? '소설' : '비소설'} • {selectedChapter.difficulty}
                 </p>
-                <Button onClick={finishReading}>
-                  읽기 완료
-                </Button>
               </div>
+            )}
+            <div className="text-sm leading-relaxed">
+              {selectedChapter ? selectedChapter.content : currentStep.readingText}
             </div>
-          )}
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              텍스트를 읽은 후 아래 버튼을 클릭하세요.
+            </p>
+            <Button onClick={finishReading}>
+              읽기 완료
+            </Button>
+          </div>
+        </div>
+      )}
 
-          {sessionState === 'comprehension' && (
-            <div className="space-y-6">
-              <div className="bg-muted p-4 rounded-lg">
-                <h3 className="font-semibold mb-4">이해도 확인 질문:</h3>
-                {readingQuestions?.map((question, index) => (
-                  <div key={index} className="mb-6">
-                    <Label className="text-sm font-medium">
-                      {index + 1}. {question.question}
-                    </Label>
-                    <RadioGroup
-                      value={answers[index]?.toString() || ''}
-                      onValueChange={(value) => handleAnswerChange(index, parseInt(value))}
-                      className="mt-2"
-                    >
-                      {question.options.map((option, optionIndex) => (
-                        <div key={optionIndex} className="flex items-center space-x-2">
-                          <RadioGroupItem value={optionIndex.toString()} id={`q${index}-${optionIndex}`} />
-                          <Label htmlFor={`q${index}-${optionIndex}`} className="text-sm">
-                            {option}
-                          </Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
-                  </div>
-                ))}
+      {currentPhase === 'comprehension' && (
+        <div className="space-y-6">
+          <div className="bg-muted p-4 rounded-lg">
+            <h3 className="font-semibold mb-4">이해도 확인 질문:</h3>
+            {readingQuestions?.map((question, index) => (
+              <div key={index} className="mb-6">
+                <Label className="text-sm font-medium">
+                  {index + 1}. {question.question}
+                </Label>
+                <RadioGroup
+                  value={answers[index]?.toString() || ''}
+                  onValueChange={(value) => handleAnswerChange(index, parseInt(value))}
+                  className="mt-2"
+                >
+                  {question.options.map((option, optionIndex) => (
+                    <div key={optionIndex} className="flex items-center space-x-2">
+                      <RadioGroupItem value={optionIndex.toString()} id={`q${index}-${optionIndex}`} />
+                      <Label htmlFor={`q${index}-${optionIndex}`} className="text-sm">
+                        {option}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
               </div>
-              
-              <Button 
-                onClick={submitComprehension} 
-                className="w-full"
-                disabled={answers.length !== readingQuestions?.length}
-              >
-                답변 제출
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <TrainingHelpModal 
-        isOpen={showHelpModal} 
-        onClose={() => setShowHelpModal(false)}
-        exerciseName={currentStep.title}
-        sessionType="custom"
-      />
+            ))}
+          </div>
+          
+          <Button 
+            onClick={submitComprehension} 
+            className="w-full"
+            disabled={answers.length !== readingQuestions?.length}
+          >
+            답변 제출
+          </Button>
+        </div>
+      )}
     </div>
-  );
+  )
+
+  // 현재 단계별 도움말 내용
+  function getCurrentStepHelp(): string {
+    if (!currentStep) return ''
+    
+    switch (currentStep.type) {
+      case 'lesson':
+        return '이론을 이해하는 것이 실습의 기초입니다. 천천히 읽고 핵심 개념을 파악해보세요.'
+      case 'exercise':
+        if (currentStep.title.includes('청킹')) {
+          return '의미 단위로 읽는 연습입니다. 개별 단어보다는 전체 의미에 집중해보세요.'
+        } else if (currentStep.title.includes('페이서')) {
+          return '손가락이나 펜으로 텍스트를 따라가며 일정한 리듬을 만들어보세요.'
+        } else {
+          return '실습을 통해 이론을 적용해보세요. 정확성을 속도보다 우선시하세요.'
+        }
+      case 'reading':
+        return '선택한 읽기 자료로 실제 훈련을 진행합니다. 텍스트 크기를 조절할 수 있습니다.'
+      case 'comprehension':
+        return '읽은 내용의 이해도를 확인합니다. 정답을 맞추는 것보다 학습 내용을 되새기는 것이 중요합니다.'
+      default:
+        return '차근차근 단계별로 진행해보세요.'
+    }
+  }
 } 

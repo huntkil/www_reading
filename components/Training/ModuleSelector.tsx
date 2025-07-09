@@ -4,7 +4,9 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from "@/components/ui/badge"
-import { FileText, Clock, ArrowRight } from "lucide-react"
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { FileText, Clock, ArrowRight, HelpCircle, Brain, Eye, Target } from "lucide-react"
+import TrainingHelpModal from './TrainingHelpModal'
 
 interface Module {
   id: string
@@ -34,6 +36,8 @@ interface ModuleSelectorProps {
 
 export function ModuleSelector({ modules, onModuleSelect }: ModuleSelectorProps) {
   const [selectedModule, setSelectedModule] = useState<Module | null>(null)
+  const [showHelpModal, setShowHelpModal] = useState(false)
+  const [helpKey, setHelpKey] = useState('')
 
   const handleModuleSelect = (module: Module) => {
     setSelectedModule(module)
@@ -45,6 +49,20 @@ export function ModuleSelector({ modules, onModuleSelect }: ModuleSelectorProps)
     }
   }
 
+  const showModuleHelp = (module: Module) => {
+    // 모듈별 도움말 키 설정
+    if (module.title.includes('기초')) {
+      setHelpKey('훈련 세션')
+    } else if (module.title.includes('시각적')) {
+      setHelpKey('의미 단위 읽기')
+    } else if (module.title.includes('고급')) {
+      setHelpKey('적응적 속도 훈련')
+    } else {
+      setHelpKey('훈련 세션')
+    }
+    setShowHelpModal(true)
+  }
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case '초급': return 'bg-green-100 text-green-800'
@@ -54,6 +72,13 @@ export function ModuleSelector({ modules, onModuleSelect }: ModuleSelectorProps)
     }
   }
 
+  const getModuleIcon = (module: Module) => {
+    if (module.title.includes('기초')) return Brain
+    if (module.title.includes('시각적')) return Eye
+    if (module.title.includes('고급')) return Target
+    return FileText
+  }
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
@@ -61,11 +86,34 @@ export function ModuleSelector({ modules, onModuleSelect }: ModuleSelectorProps)
         <p className="text-muted-foreground">
           원하는 훈련 모듈을 선택하여 단계별로 학습하세요
         </p>
+        <div className="flex justify-center mt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setHelpKey('훈련 세션')
+              setShowHelpModal(true)
+            }}
+            className="flex items-center space-x-2"
+          >
+            <HelpCircle className="h-4 w-4" />
+            <span>훈련 방법 가이드</span>
+          </Button>
+        </div>
       </div>
+
+      {/* 모듈 선택 가이드 */}
+      <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
+        <HelpCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+        <AlertDescription className="text-blue-800 dark:text-blue-200">
+          <strong>💡 선택 가이드:</strong> 처음이시라면 '기초 속발음 제어 훈련'부터 시작하세요. 
+          각 모듈은 단계별로 구성되어 있어 체계적으로 학습할 수 있습니다.
+        </AlertDescription>
+      </Alert>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {modules.map((module) => {
-          const Icon = module.icon
+          const Icon = getModuleIcon(module)
           const isSelected = selectedModule?.id === module.id
           
           return (
@@ -82,9 +130,22 @@ export function ModuleSelector({ modules, onModuleSelect }: ModuleSelectorProps)
                     <Icon className="h-5 w-5 text-primary" />
                     <CardTitle className="text-lg">{module.title}</CardTitle>
                   </div>
-                  <Badge className={getDifficultyColor(module.difficulty)}>
-                    {module.difficulty}
-                  </Badge>
+                  <div className="flex items-center space-x-2">
+                    <Badge className={getDifficultyColor(module.difficulty)}>
+                      {module.difficulty}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        showModuleHelp(module)
+                      }}
+                      className="h-6 w-6 p-0"
+                    >
+                      <HelpCircle className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
                 <CardDescription className="text-sm">
                   {module.description}
@@ -119,6 +180,13 @@ export function ModuleSelector({ modules, onModuleSelect }: ModuleSelectorProps)
           </Button>
         </div>
       )}
+
+      {/* 도움말 모달 */}
+      <TrainingHelpModal
+        open={showHelpModal}
+        onOpenChange={setShowHelpModal}
+        selectedHelpKey={helpKey}
+      />
     </div>
   )
 } 
