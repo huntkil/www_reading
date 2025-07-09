@@ -3,13 +3,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Clock, Target, BookOpen, CheckCircle, ArrowLeft, Play, Pause, RotateCcw, Timer, Brain } from "lucide-react"
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Timer, CheckCircle, ArrowLeft, BookOpen, Clock, Target, Brain, Play, Pause, RotateCcw } from 'lucide-react'
 import { ReadingChapter } from '@/lib/readingMaterials'
 
 interface ReadingTrainingProps {
@@ -25,50 +22,44 @@ export function ReadingTraining({ chapter, onComplete, onBack }: ReadingTraining
   const [isPaused, setIsPaused] = useState(false)
   const [pauseTime, setPauseTime] = useState(0)
   const [answers, setAnswers] = useState<number[]>([])
-  const [textAnswers, setTextAnswers] = useState<string[]>([])
   const [wpm, setWpm] = useState(0)
   const [accuracy, setAccuracy] = useState(0)
 
-  const startReading = () => {
+  const startReading = useCallback(() => {
     setCurrentPhase('reading')
     setStartTime(Date.now())
-  }
+    setIsPaused(false)
+  }, [])
 
-  const finishReading = () => {
-    setEndTime(Date.now())
+  const finishReading = useCallback(() => {
     setCurrentPhase('comprehension')
-  }
+    setEndTime(Date.now())
+  }, [])
 
-  const togglePause = () => {
+  const togglePause = useCallback(() => {
     if (isPaused) {
       setPauseTime(prev => prev + (Date.now() - (pauseTime || Date.now())))
     } else {
       setPauseTime(Date.now())
     }
     setIsPaused(!isPaused)
-  }
+  }, [isPaused, pauseTime])
 
-  const resetReading = () => {
+  const resetReading = useCallback(() => {
     setStartTime(null)
     setEndTime(null)
     setIsPaused(false)
     setPauseTime(0)
     setCurrentPhase('preparation')
-  }
+  }, [])
 
-  const handleAnswerChange = (index: number, value: number) => {
+  const handleAnswerChange = useCallback((index: number, value: number) => {
     const newAnswers = [...answers]
     newAnswers[index] = value
     setAnswers(newAnswers)
-  }
+  }, [answers])
 
-  const handleTextAnswerChange = (index: number, value: string) => {
-    const newTextAnswers = [...textAnswers]
-    newTextAnswers[index] = value
-    setTextAnswers(newTextAnswers)
-  }
-
-  const calculateComprehensionScore = () => {
+  const calculateComprehensionScore = useCallback(() => {
     if (!chapter.questions) return 0
     
     let correct = 0
@@ -79,13 +70,13 @@ export function ReadingTraining({ chapter, onComplete, onBack }: ReadingTraining
     })
     
     return Math.round((correct / chapter.questions.length) * 100)
-  }
+  }, [answers, chapter.questions])
 
-  const submitComprehension = () => {
+  const submitComprehension = useCallback(() => {
     const comprehensionScore = calculateComprehensionScore()
     setAccuracy(comprehensionScore)
     setCurrentPhase('complete')
-  }
+  }, [calculateComprehensionScore])
 
   const calculateWPM = useCallback(() => {
     if (!startTime || !endTime) return 0
@@ -97,17 +88,17 @@ export function ReadingTraining({ chapter, onComplete, onBack }: ReadingTraining
     return Math.round(wordCount / minutes)
   }, [startTime, endTime, pauseTime, chapter.content])
 
-  const formatTime = (seconds: number) => {
+  const formatTime = useCallback((seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
+  }, [])
 
-  const getElapsedTime = () => {
+  const getElapsedTime = useCallback(() => {
     if (!startTime) return 0
     const now = isPaused ? pauseTime : Date.now()
     return Math.floor((now - startTime) / 1000)
-  }
+  }, [startTime, isPaused, pauseTime])
 
   useEffect(() => {
     if (currentPhase === 'reading' && !isPaused) {
@@ -125,13 +116,13 @@ export function ReadingTraining({ chapter, onComplete, onBack }: ReadingTraining
     }
   }, [currentPhase, calculateWPM])
 
-  const handleSessionComplete = () => {
+  const handleSessionComplete = useCallback(() => {
     onComplete({
       wpm,
       accuracy,
       chapter: chapter.title
     })
-  }
+  }, [onComplete, wpm, accuracy, chapter.title])
 
   if (currentPhase === 'preparation') {
     return (
@@ -184,7 +175,7 @@ export function ReadingTraining({ chapter, onComplete, onBack }: ReadingTraining
                 <strong>훈련 방법:</strong>
                 <ul className="mt-2 space-y-1 text-sm">
                   <li>• 시작 버튼을 누르면 타이머가 시작됩니다</li>
-                  <li>• 텍스트를 읽은 후 "읽기 완료" 버튼을 누르세요</li>
+                  <li>• 텍스트를 읽은 후 &quot;읽기 완료&quot; 버튼을 누르세요</li>
                   <li>• 이해도 질문에 답한 후 결과를 확인하세요</li>
                   <li>• WPM(분당 단어 수)과 이해도를 측정합니다</li>
                 </ul>
@@ -228,7 +219,7 @@ export function ReadingTraining({ chapter, onComplete, onBack }: ReadingTraining
               <span>읽기 중</span>
             </CardTitle>
             <CardDescription>
-              텍스트를 읽은 후 "읽기 완료" 버튼을 눌러주세요.
+              텍스트를 읽은 후 &quot;읽기 완료&quot; 버튼을 눌러주세요.
             </CardDescription>
           </CardHeader>
           <CardContent>

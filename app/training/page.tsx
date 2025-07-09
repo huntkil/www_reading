@@ -1,14 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-import { Brain, Eye, Target, BookOpen, Clock, ArrowRight, Play, Pause, RotateCcw, CheckCircle, ChevronLeft, ChevronRight, Terminal, HelpCircle, Book, Newspaper, ArrowLeft, Zap, GraduationCap, FileText, X } from "lucide-react"
+import { Brain, Eye, Target, BookOpen, Play, CheckCircle, HelpCircle, GraduationCap, FileText } from "lucide-react"
 import { TrainingSession } from '@/components/Training/TrainingSession'
 import { ModuleSelector } from '@/components/Training/ModuleSelector'
 import { ReadingSelector } from '@/components/Training/ReadingSelector'
@@ -17,19 +16,38 @@ import { TrainingPlan } from '@/lib/types'
 import { ReadingChapter } from '@/lib/readingMaterials'
 import TrainingHelpModal from '@/components/Training/TrainingHelpModal'
 
+interface TrainingModule {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: string;
+  duration: number;
+  icon: React.ComponentType;
+  steps: Array<{
+    id: string;
+    title: string;
+    type: string;
+    content: string;
+    readingText?: string;
+    questions?: Array<{
+      question: string;
+      options: string[];
+      correct: number;
+    }>;
+  }>;
+}
+
 type TrainingStep = 'select-type' | 'select-module' | 'select-reading' | 'training'
 type TrainingType = 'module' | 'reading'
 
 export default function TrainingPage() {
   const [currentStep, setCurrentStep] = useState<TrainingStep>('select-type')
   const [trainingType, setTrainingType] = useState<TrainingType | null>(null)
-  const [selectedModule, setSelectedModule] = useState<any>(null)
+  const [selectedModule, setSelectedModule] = useState<TrainingModule | null>(null)
   const [plan, setPlan] = useState<TrainingPlan | null>(null)
   const [selectedChapter, setSelectedChapter] = useState<ReadingChapter | null>(null)
   const [isReadingStarted, setIsReadingStarted] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
-  const [sessionHistory, setSessionHistory] = useState<any[]>([])
 
   // 훈련 모듈 정의
   const trainingModules = [
@@ -244,7 +262,7 @@ export default function TrainingPage() {
     }
   }
 
-  const handleModuleSelect = (module: any) => {
+  const handleModuleSelect = (module: TrainingModule) => {
     console.log('=== handleModuleSelect ===')
     console.log('selected module:', module)
     setSelectedModule(module)
@@ -272,13 +290,11 @@ export default function TrainingPage() {
     }
   }
 
-  const handleSessionComplete = (stats: { wpm: number; accuracy: number; module: string }) => {
-    setSessionHistory(prev => [...prev, stats])
+  const handleSessionComplete = () => {
     resetTraining()
   }
 
-  const handleReadingComplete = (stats: { wpm: number; accuracy: number; chapter: string }) => {
-    setSessionHistory(prev => [...prev, stats])
+  const handleReadingComplete = () => {
     resetTraining()
   }
 
@@ -475,7 +491,7 @@ export default function TrainingPage() {
           {/* 헤더 */}
           <div className="mb-8">
             <Button variant="outline" onClick={goBack} className="mb-4">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              {/* <ArrowLeft className="mr-2 h-4 w-4" /> */} {/* Removed as per edit hint */}
               뒤로 가기
             </Button>
             
@@ -509,7 +525,7 @@ export default function TrainingPage() {
           {/* 헤더 */}
           <div className="mb-8">
             <Button variant="outline" onClick={goBack} className="mb-4">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              {/* <ArrowLeft className="mr-2 h-4 w-4" /> */} {/* Removed as per edit hint */}
               뒤로 가기
             </Button>
             
@@ -543,7 +559,7 @@ export default function TrainingPage() {
           {/* 헤더 */}
           <div className="mb-8">
             <Button variant="outline" onClick={goBack} className="mb-4">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              {/* <ArrowLeft className="mr-2 h-4 w-4" /> */} {/* Removed as per edit hint */}
               뒤로 가기
             </Button>
             

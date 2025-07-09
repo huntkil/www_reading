@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from "@/components/ui/badge"
-import { Brain, Eye, Target, BookOpen, Clock, ArrowRight } from "lucide-react"
+import { FileText, Clock, ArrowRight } from "lucide-react"
 
 interface Module {
   id: string
@@ -12,8 +12,19 @@ interface Module {
   description: string
   difficulty: string
   duration: number
-  icon: any
-  steps: any[]
+  icon: React.ComponentType
+  steps: Array<{
+    id: string
+    title: string
+    type: string
+    content: string
+    readingText?: string
+    questions?: Array<{
+      question: string
+      options: string[]
+      correct: number
+    }>
+  }>
 }
 
 interface ModuleSelectorProps {
@@ -86,7 +97,7 @@ export function ModuleSelector({ modules, onModuleSelect }: ModuleSelectorProps)
                     <span>{module.duration}분</span>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <BookOpen className="h-4 w-4" />
+                    <FileText className="h-4 w-4" />
                     <span>{module.steps.length}단계</span>
                   </div>
                 </div>

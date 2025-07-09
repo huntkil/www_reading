@@ -11,18 +11,15 @@ export interface NoteData {
 export class NoteService {
   // 노트 생성
   async createNote(data: NoteData) {
-    const noteData: any = {
+    const noteData = {
       content: data.content,
       path: data.title || `note_${Date.now()}`,
       metadata: JSON.stringify({
         title: data.title,
         tags: data.tags || []
-      })
+      }),
+      ...(data.sessionId && { sessionId: data.sessionId })
     };
-
-    if (data.sessionId) {
-      noteData.sessionId = data.sessionId;
-    }
 
     return await prisma.note.create({
       data: noteData

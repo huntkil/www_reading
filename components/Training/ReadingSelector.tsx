@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { BookOpen, Clock, FileText, ArrowRight, Book, Newspaper } from "lucide-react"
+import { Clock, FileText, ArrowRight, Book, Newspaper } from "lucide-react"
 import { aliceChapters, dailyEssays, ReadingChapter } from '@/lib/readingMaterials'
 
 interface ReadingSelectorProps {

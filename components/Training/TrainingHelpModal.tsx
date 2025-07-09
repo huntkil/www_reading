@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,10 +9,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { HelpCircle, Lightbulb, Target, Clock, BookOpen, Brain, Eye, Zap, TrendingUp } from 'lucide-react';
 
 interface TrainingHelpModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  exerciseName: string;
-  sessionType: 'quick' | 'speed' | 'custom';
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  selectedHelpKey: string;
 }
 
 interface HelpContent {
@@ -251,35 +249,19 @@ const helpContents: { [key: string]: HelpContent } = {
   }
 };
 
-export default function TrainingHelpModal({ isOpen, onClose, exerciseName, sessionType }: TrainingHelpModalProps) {
-  const helpContent = helpContents[exerciseName];
-
-  if (!helpContent) {
-    return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>도움말</DialogTitle>
-            <DialogDescription>이 훈련에 대한 도움말 정보가 준비 중입니다.</DialogDescription>
-          </DialogHeader>
-          <div className="text-center py-8">
-            <HelpCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">곧 상세한 도움말이 제공될 예정입니다.</p>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
+export default function TrainingHelpModal({ open, onOpenChange, selectedHelpKey }: TrainingHelpModalProps) {
+  const helpContent = helpContents[selectedHelpKey] || helpContents['훈련 세션'];
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {helpContent.icon}
-            {helpContent.title}
+            <HelpCircle className="h-5 w-5" />
+            훈련 도움말
           </DialogTitle>
-          <DialogDescription>{helpContent.description}</DialogDescription>
+          <DialogDescription>
+            읽기 훈련의 각 단계와 기법에 대해 자세히 알아보세요.
+          </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="overview" className="w-full">
@@ -386,7 +368,7 @@ export default function TrainingHelpModal({ isOpen, onClose, exerciseName, sessi
         </Tabs>
 
         <div className="flex justify-end gap-2 pt-4 border-t">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             닫기
           </Button>
         </div>

@@ -1,38 +1,29 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 
-// GET /api/performance-stats/[id] - 특정 성과 통계 조회
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const statsId = params.id;
-
-    // 1. id로 먼저 조회
-    let stats = await prisma.performanceStats.findUnique({
-      where: { id: statsId },
-    });
-
-    // 2. 없으면 userId로 조회 (이제 필요 없음, 단일 사용자)
+    const stats = await prisma.performanceStats.findUnique({
+      where: { id: params.id }
+    })
 
     if (!stats) {
       return NextResponse.json(
-        { success: false, error: '성과 통계를 찾을 수 없습니다.' },
+        { error: 'Performance stats not found' },
         { status: 404 }
-      );
+      )
     }
 
-    return NextResponse.json({
-      success: true,
-      data: stats,
-    });
+    return NextResponse.json(stats)
   } catch (error) {
-    console.error('성과 통계 조회 오류:', error);
+    console.error('Performance stats fetch error:', error)
     return NextResponse.json(
-      { success: false, error: '성과 통계를 조회할 수 없습니다.' },
+      { error: 'Failed to fetch performance stats' },
       { status: 500 }
-    );
+    )
   }
 }
 

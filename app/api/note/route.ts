@@ -51,15 +51,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const noteData: any = {
+    const noteData = {
       path,
       content,
       metadata: metadata ? JSON.stringify(metadata) : null,
+      ...(sessionId && { sessionId })
     };
-
-    if (sessionId) {
-      noteData.sessionId = sessionId;
-    }
 
     const note = await prisma.note.create({
       data: noteData,

@@ -1,18 +1,48 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Terminal, CheckCircle, HelpCircle, Eye, Clock, Target, BookOpen, Brain, Zap, Award, ArrowRight, Play, Pause, RotateCcw, ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from "lucide-react"
-import { TrainingPlan } from '@/lib/types';
-import { ReadingChapter } from '@/lib/readingMaterials';
-import TrainingHelpModal from './TrainingHelpModal';
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Timer, CheckCircle, ArrowLeft, Target, Brain, Eye, HelpCircle, ZoomOut, ZoomIn, Play, Pause, RotateCcw } from 'lucide-react'
+import { ReadingChapter } from '@/lib/readingMaterials'
+import { TrainingPlan } from '@/lib/types'
+import TrainingHelpModal from './TrainingHelpModal'
+
+interface TrainingStep {
+  id: string
+  title: string
+  type: string
+  content: string
+  readingText?: string
+  questions?: Array<{
+    question: string
+    options: string[]
+    correct: number
+  }>
+}
+
+interface TrainingModule {
+  id: string
+  title: string
+  description: string
+  difficulty: string
+  duration: number
+  icon: React.ComponentType
+  steps: TrainingStep[]
+}
+
+interface TrainingSessionProps {
+  plan: TrainingPlan | null
+  selectedModule?: TrainingModule | null
+  selectedChapter?: ReadingChapter | null
+  onSessionComplete: (stats: { wpm: number; accuracy: number; module: string }) => void
+  onBack?: () => void
+}
 
 // 단계별 훈련 모듈 정의
 const trainingModules = [
@@ -342,16 +372,13 @@ const trainingModules = [
   }
 ];
 
-interface TrainingSessionProps {
-  plan: TrainingPlan | null
-  selectedModule?: any
-  selectedChapter?: ReadingChapter | null
-  onSessionComplete: (stats: { wpm: number; accuracy: number; module: string }) => void
-  onBack?: () => void
-}
-
-export function TrainingSession({ plan, selectedModule, selectedChapter, onSessionComplete, onBack }: TrainingSessionProps) {
-  const [currentModuleIndex, setCurrentModuleIndex] = useState(0)
+export function TrainingSession({ 
+  selectedModule, 
+  selectedChapter, 
+  onSessionComplete, 
+  onBack 
+}: TrainingSessionProps) {
+  const [currentModuleIndex] = useState(0)
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [sessionState, setSessionState] = useState<'lesson' | 'exercise' | 'reading' | 'comprehension' | 'complete'>('lesson')
   const [timeLeft, setTimeLeft] = useState(0)
@@ -407,12 +434,6 @@ export function TrainingSession({ plan, selectedModule, selectedChapter, onSessi
   }
 
   const handleAnswerChange = (index: number, value: number) => {
-    const newAnswers = [...answers]
-    newAnswers[index] = value
-    setAnswers(newAnswers)
-  }
-
-  const handleTextAnswerChange = (index: number, value: string) => {
     const newAnswers = [...answers]
     newAnswers[index] = value
     setAnswers(newAnswers)
@@ -541,7 +562,7 @@ export function TrainingSession({ plan, selectedModule, selectedChapter, onSessi
                   className="h-8 w-8 p-0"
                   title="훈련 종료"
                 >
-                  <X className="h-4 w-4" />
+                  <ArrowLeft className="h-4 w-4" />
                 </Button>
               )}
             </div>
@@ -560,7 +581,7 @@ export function TrainingSession({ plan, selectedModule, selectedChapter, onSessi
               </div>
               {feedbackMessage && (
                 <Alert variant={feedbackMessage.type === 'error' ? 'destructive' : 'default'}>
-                  <Terminal className="h-4 w-4" />
+                  <Timer className="h-4 w-4" />
                   <AlertDescription>{feedbackMessage.message}</AlertDescription>
                 </Alert>
               )}
@@ -591,9 +612,9 @@ export function TrainingSession({ plan, selectedModule, selectedChapter, onSessi
                 <currentModule.icon className="h-5 w-5" />
                 {currentModule.title}
               </CardTitle>
-              <CardDescription>
+              <p className="text-sm text-muted-foreground">
                 {currentStep.title} - {currentModule.description}
-              </CardDescription>
+              </p>
               <div className="flex items-center gap-2 mt-2">
                 <Badge variant="outline">{currentModule.difficulty}</Badge>
                 <Badge variant="secondary">{currentModule.duration}분</Badge>
@@ -617,7 +638,7 @@ export function TrainingSession({ plan, selectedModule, selectedChapter, onSessi
                   className="h-8 w-8 p-0"
                   title="훈련 종료"
                 >
-                  <X className="h-4 w-4" />
+                  <ArrowLeft className="h-4 w-4" />
                 </Button>
               )}
             </div>

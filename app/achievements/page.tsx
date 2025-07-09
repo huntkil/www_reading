@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { Trophy, Award, Target, TrendingUp, Loader2 } from 'lucide-react'
+import { Trophy, Award, Star, Target, Loader2 } from 'lucide-react'
 
 interface Achievement {
   id: string
@@ -138,7 +137,7 @@ export default function AchievementsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
+                <Star className="h-5 w-5" />
                 달성률
               </CardTitle>
             </CardHeader>
