@@ -5,13 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
+
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Timer, CheckCircle, ArrowLeft, Target, Brain, Eye, HelpCircle, ZoomOut, ZoomIn, Play, Pause, RotateCcw } from 'lucide-react'
 import { ReadingChapter } from '@/lib/readingMaterials'
 import { TrainingPlan } from '@/lib/types'
-import TrainingHelpModal from './TrainingHelpModal'
+
 
 interface TrainingStep {
   id: string
@@ -380,10 +380,8 @@ export function TrainingSession({
 }: TrainingSessionProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [currentPhase, setCurrentPhase] = useState<'lesson' | 'exercise' | 'reading' | 'comprehension' | 'complete'>('lesson')
-  const [exerciseStartTime, setExerciseStartTime] = useState<number | null>(null)
   const [readingStartTime, setReadingStartTime] = useState<number | null>(null)
   const [readingEndTime, setReadingEndTime] = useState<number | null>(null)
-  const [elapsedTime, setElapsedTime] = useState(0)
   const [timeLeft, setTimeLeft] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const [answers, setAnswers] = useState<number[]>([])
@@ -391,36 +389,11 @@ export function TrainingSession({
   const [wpm, setWpm] = useState(0)
   const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
   const [textSize, setTextSize] = useState<'small' | 'medium' | 'large' | 'xlarge'>('medium')
-  const [showHelpModal, setShowHelpModal] = useState(false)
-  const [helpKey, setHelpKey] = useState('')
 
   const currentModule = selectedModule || trainingModules[0]
   const currentStep = currentModule.steps[currentStepIndex]
 
-  // 현재 단계에 따른 도움말 키 설정
-  useEffect(() => {
-    if (currentStep) {
-      switch (currentStep.type) {
-        case 'lesson':
-          setHelpKey('인지 병목 현상 이해')
-          break
-        case 'exercise':
-          if (currentStep.title.includes('청킹')) {
-            setHelpKey('의미 단위 읽기')
-          } else if (currentStep.title.includes('페이서')) {
-            setHelpKey('페이서 훈련')
-          } else {
-            setHelpKey('훈련 세션')
-          }
-          break
-        case 'reading':
-          setHelpKey('적응적 속도 훈련')
-          break
-        default:
-          setHelpKey('훈련 세션')
-      }
-    }
-  }, [currentStep])
+
 
   // 선택한 리딩 자료가 있으면 해당 내용을 사용 (reading 단계에서만)
   const readingContent = selectedChapter?.content || currentStep.readingText
@@ -430,7 +403,6 @@ export function TrainingSession({
 
   const startExercise = () => {
     setCurrentPhase('exercise')
-    setExerciseStartTime(Date.now())
   }
 
   const startReading = () => {
@@ -635,15 +607,7 @@ export function TrainingSession({
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowHelpModal(true)}
-            className="flex items-center space-x-2"
-          >
-            <HelpCircle className="h-4 w-4" />
-            <span>도움말</span>
-          </Button>
+
         </div>
       </div>
 

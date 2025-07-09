@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from "@/components/ui/badge"
 
-import { Brain, Eye, Target, BookOpen, HelpCircle, GraduationCap, FileText, CheckCircle } from "lucide-react"
+import { Brain, Eye, Target, BookOpen, HelpCircle, GraduationCap, CheckCircle } from "lucide-react"
 import { TrainingSession, TrainingModule } from '@/components/Training/TrainingSession'
 
 import { ReadingSelector } from '@/components/Training/ReadingSelector'

@@ -106,7 +106,7 @@ export function ModuleSelector({ modules, onModuleSelect }: ModuleSelectorProps)
       <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
         <HelpCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
         <AlertDescription className="text-blue-800 dark:text-blue-200">
-          <strong>💡 선택 가이드:</strong> 처음이시라면 '기초 속발음 제어 훈련'부터 시작하세요. 
+          <strong>💡 선택 가이드:</strong> 처음이시라면 &apos;기초 속발음 제어 훈련&apos;부터 시작하세요. 
           각 모듈은 단계별로 구성되어 있어 체계적으로 학습할 수 있습니다.
         </AlertDescription>
       </Alert>
