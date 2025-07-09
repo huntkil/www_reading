@@ -9,6 +9,8 @@ Next.js 기반의 AI 파워드 속발음 훈련 애플리케이션으로, 개인
 - **체계적 단계별 읽기 훈련**: 모듈/단계별 훈련, 실시간 타이머, WPM/정확도 측정
 - **AI 기반 개인화**: OpenAI API 기반 맞춤형 훈련 계획/분석/추천
 - **실시간 노트/기록/성과 추적**: 세션별 노트, 대시보드, 성취 시스템
+- **텍스트 크기 조절**: 훈련 중 실시간 텍스트 크기 변경 (4단계)
+- **즉시 시작 기능**: 모듈/읽기 선택 시 자동으로 다음 단계 진행
 - **ShadCN UI + Lucide 아이콘**: 일관된 UI/UX, 모든 컴포넌트 타입 안전
 - **데이터 관리**: SQLite(개발)/PostgreSQL(운영), Prisma ORM
 - **테스트/품질 관리**: Jest, ESLint, 100% TypeScript
@@ -39,6 +41,11 @@ reading/
 ├── components/            # React 컴포넌트
 │   ├── ui/               # ShadCN UI 컴포넌트
 │   ├── Training/         # 훈련 관련 컴포넌트
+│   │   ├── TrainingSession.tsx      # 메인 훈련 세션
+│   │   ├── TrainingHelpModal.tsx    # 훈련 도움말
+│   │   ├── ModuleSelector.tsx       # 모듈 선택
+│   │   ├── ReadingSelector.tsx      # 읽기 자료 선택
+│   │   └── ...
 │   ├── Dashboard/        # 대시보드 컴포넌트
 │   ├── AI/               # AI 관련 컴포넌트
 │   └── ...
@@ -64,6 +71,16 @@ reading/
 
 ---
 
+## 🎯 최신 기능 (2025.07)
+
+- **텍스트 크기 조절**: 훈련 중 실시간 텍스트 크기 변경 (small, medium, large, xlarge)
+- **즉시 시작**: 모듈/읽기 선택 시 자동으로 다음 단계 진행
+- **콘솔 로그 제거**: 프로덕션 환경 최적화
+- **향상된 UI/UX**: 더 직관적인 훈련 플로우
+- **완전한 타입 안전성**: 모든 컴포넌트에 TypeScript 타입 적용
+
+---
+
 ## 🤝 협업/커밋 규칙
 
 - 기능/버그 단위 브랜치, 상세 커밋 메시지
@@ -75,6 +92,7 @@ reading/
 
 ## 📄 참고 문서
 - [docs/TRAINING_FEATURE.md](docs/TRAINING_FEATURE.md): 훈련 기능 상세
+- [docs/LATEST_FEATURES.md](docs/LATEST_FEATURES.md): 최신 기능 상세
 - [개발순서.md](개발순서.md): 개발 단계/체크리스트
 - [DEPLOYMENT.md](DEPLOYMENT.md): 배포 가이드
 - [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md): 전체 개요 

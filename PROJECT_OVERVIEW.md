@@ -8,12 +8,14 @@
 
 ## 🚀 핵심 기능
 
-- 단계별 읽기 훈련 (모듈/단계/실시간 측정)
-- AI 기반 개인화 계획/분석/추천
-- 실시간 노트/기록/성과/성취 시스템
-- 대시보드/통계/리포트/목표 관리
-- 데이터 관리(로컬 SQLite/운영 PostgreSQL)
-- 완전한 API/테스트/배포 자동화
+- **단계별 읽기 훈련** (모듈/단계/실시간 측정)
+- **AI 기반 개인화** 계획/분석/추천
+- **실시간 노트/기록/성과/성취** 시스템
+- **대시보드/통계/리포트/목표** 관리
+- **텍스트 크기 조절** (4단계 실시간 조절)
+- **즉시 시작 기능** (선택 시 자동 진행)
+- **데이터 관리** (로컬 SQLite/운영 PostgreSQL)
+- **완전한 API/테스트/배포** 자동화
 
 ## 🛠️ 기술/개발 규칙
 
@@ -25,10 +27,19 @@
 
 - app/: Next.js App Router, API, 페이지
 - components/: ShadCN UI, Training, Dashboard 등
+  - Training/: TrainingSession, TrainingHelpModal, ModuleSelector, ReadingSelector
 - lib/: 서비스/AI/분석/DB/유틸
 - prisma/: DB 스키마
 - docs/: 개발/기능 문서
 - __tests__/: 테스트
+
+## 🎯 최신 기능 (2025.07)
+
+- **텍스트 크기 조절**: 훈련 중 실시간 텍스트 크기 변경
+- **즉시 시작**: 모듈/읽기 선택 시 자동으로 다음 단계 진행
+- **콘솔 로그 제거**: 프로덕션 환경 최적화
+- **향상된 UI/UX**: 더 직관적인 훈련 플로우
+- **완전한 타입 안전성**: 모든 컴포넌트에 TypeScript 타입 적용
 
 ## 🔄 워크플로우/체크리스트
 
@@ -41,4 +52,5 @@
 - [README.md](./README.md)
 - [개발순서.md](./개발순서.md)
 - [DEPLOYMENT.md](./DEPLOYMENT.md)
-- [docs/TRAINING_FEATURE.md](./docs/TRAINING_FEATURE.md) 
+- [docs/TRAINING_FEATURE.md](./docs/TRAINING_FEATURE.md)
+- [docs/LATEST_FEATURES.md](./docs/LATEST_FEATURES.md) 

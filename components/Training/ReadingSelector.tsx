@@ -15,9 +15,6 @@ interface ReadingSelectorProps {
 export function ReadingSelector({ onChapterSelect }: ReadingSelectorProps) {
 
   const handleChapterSelect = (chapter: ReadingChapter) => {
-    console.log('=== 리딩 자료 선택 ===')
-    console.log('선택한 챕터:', chapter.title)
-    console.log('바로 읽기 시작')
     onChapterSelect(chapter)
   }
 

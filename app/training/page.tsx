@@ -235,14 +235,10 @@ export default function TrainingPage() {
   ]
 
   const handleTrainingTypeSelect = (type: TrainingType) => {
-    console.log('=== 훈련 유형 선택 ===')
-    console.log('선택한 훈련 유형:', type)
     setTrainingType(type)
     if (type === 'reading') {
-      console.log('학습용 리딩 선택 - 리딩 선택 단계로 이동')
       setCurrentStep('select-reading')
     } else {
-      console.log('단계별 훈련 선택 - 모듈 선택 단계로 이동')
       setCurrentStep('select-module')
     }
   }
@@ -250,26 +246,19 @@ export default function TrainingPage() {
 
 
   const handleReadingSelect = (chapter: ReadingChapter) => {
-    console.log('=== 학습 자료 선택 ===')
-    console.log('선택한 챕터:', chapter.title)
-    console.log('챕터 난이도:', chapter.difficulty)
-    console.log('챕터 제목:', chapter.title)
     setSelectedChapter(chapter)
     
     if (trainingType === 'reading') {
       // 학습용 리딩의 경우 바로 읽기 훈련 단계로 이동
-      console.log('학습용 리딩 - 바로 읽기 훈련 시작')
       setCurrentStep('reading-training')
     } else {
       // 단계별 훈련의 경우 훈련 계획 생성 후 훈련 단계로 이동
-      console.log('단계별 훈련 - 훈련 계획 생성 중...')
       const newPlan: TrainingPlan = {
         title: trainingModules[0].title,
         targetWpm: 300,
         duration: trainingModules[0].duration,
         content: trainingModules[0].description
       }
-      console.log('생성된 훈련 계획:', newPlan)
       setPlan(newPlan)
       setCurrentStep('training')
     }
@@ -280,20 +269,14 @@ export default function TrainingPage() {
 
 
   const handleSessionComplete = () => {
-    console.log('=== 훈련 세션 완료 ===')
-    console.log('훈련 초기화 중...')
     resetTraining()
   }
 
   const handleReadingComplete = () => {
-    console.log('=== 리딩 완료 ===')
-    console.log('훈련 초기화 중...')
     resetTraining()
   }
 
   const resetTraining = () => {
-    console.log('=== 훈련 상태 초기화 ===')
-    console.log('모든 상태를 초기값으로 리셋')
     setCurrentStep('select-type')
     setTrainingType(null)
     setPlan(null)
@@ -301,29 +284,21 @@ export default function TrainingPage() {
   }
 
   const goBack = () => {
-    console.log('=== 뒤로가기 버튼 클릭 ===')
-    console.log('현재 단계:', currentStep)
-    
     if (currentStep === 'select-module') {
-      console.log('모듈 선택 → 훈련 유형 선택으로 이동')
       setCurrentStep('select-type')
       setTrainingType(null)
     } else if (currentStep === 'select-reading') {
       if (trainingType === 'module') {
-        console.log('리딩 선택 → 모듈 선택으로 이동')
         setCurrentStep('select-module')
       } else {
-        console.log('리딩 선택 → 훈련 유형 선택으로 이동')
         setCurrentStep('select-type')
         setTrainingType(null)
       }
     } else if (currentStep === 'training') {
-      console.log('훈련 → 리딩 선택으로 이동')
       setCurrentStep('select-reading')
       setPlan(null)
       setSelectedChapter(null)
     } else if (currentStep === 'reading-training') {
-      console.log('리딩 훈련 → 리딩 선택으로 이동')
       setCurrentStep('select-reading')
       setSelectedChapter(null)
     }
@@ -521,8 +496,6 @@ export default function TrainingPage() {
                 key={module.id}
                 className="cursor-pointer hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50 group"
                 onClick={() => {
-                  console.log('=== 훈련 모듈 선택 ===')
-                  console.log('선택한 모듈:', module.title)
                   setCurrentStep('select-reading')
                 }}
               >
