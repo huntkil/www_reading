@@ -53,9 +53,6 @@ export default function RootLayout({
                     <h3 className="font-semibold">빠른 링크</h3>
                     <div className="space-y-2 text-sm">
                       <Link href="/" className="block text-muted-foreground hover:text-foreground transition-colors">
-                        홈
-                      </Link>
-                      <Link href="/dashboard" className="block text-muted-foreground hover:text-foreground transition-colors">
                         대시보드
                       </Link>
                       <Link href="/training" className="block text-muted-foreground hover:text-foreground transition-colors">

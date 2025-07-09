@@ -12,32 +12,9 @@ export async function GET(
     // 1. id로 먼저 조회
     let stats = await prisma.performanceStats.findUnique({
       where: { id: statsId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
     });
 
-    // 2. 없으면 userId로 조회
-    if (!stats) {
-      stats = await prisma.performanceStats.findUnique({
-        where: { userId: statsId },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
-      });
-    }
+    // 2. 없으면 userId로 조회 (이제 필요 없음, 단일 사용자)
 
     if (!stats) {
       return NextResponse.json(
@@ -100,15 +77,6 @@ export async function PUT(
         averageSpeed,
         lastSessionDate: lastSessionDate ? new Date(lastSessionDate) : undefined,
         updatedAt: new Date(),
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
       },
     });
 

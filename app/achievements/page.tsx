@@ -1,292 +1,174 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Award, Trophy, Star, Target, Clock, TrendingUp, BookOpen, Zap, LucideIcon } from 'lucide-react';
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { Trophy, Award, Target, TrendingUp, Loader2 } from 'lucide-react'
 
 interface Achievement {
-  id: string;
-  userId: string;
-  type: string;
-  title: string;
-  description: string;
-  icon: string | null;
-  unlockedAt: string;
+  id: string
+  type: string
+  title: string
+  description: string
+  icon: string | null
+  unlockedAt: string
 }
 
 export default function AchievementsPage() {
-  const { user, isAuthenticated } = useAuth();
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchAchievements = useCallback(async () => {
-    if (!user) return;
-    try {
-      const response = await fetch(`/api/achievement?userId=${user.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setAchievements(data.achievements || []);
-      }
-    } catch (error) {
-      console.error('Failed to fetch achievements:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
+  const [achievements, setAchievements] = useState<Achievement[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (isAuthenticated && user) {
-      fetchAchievements();
+    const fetchAchievements = async () => {
+      try {
+        const response = await fetch('/api/achievement')
+        if (response.ok) {
+          const data = await response.json()
+          setAchievements(data.data || [])
+        } else {
+          setError('성취 데이터를 불러오는데 실패했습니다.')
+        }
+      } catch (error) {
+        console.error('Failed to fetch achievements:', error)
+        setError('네트워크 오류가 발생했습니다.')
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [isAuthenticated, user, fetchAchievements]);
 
-  // Placeholder achievements for demonstration
-  const placeholderAchievements = [
-    {
-      id: '1',
-      type: 'first_session',
-      title: '첫 번째 세션',
-      description: '첫 번째 읽기 세션을 완료했습니다',
-      icon: 'BookOpen',
-      unlockedAt: null,
-    },
-    {
-      id: '2',
-      type: 'speed_improvement',
-      title: '속도 향상',
-      description: '읽기 속도를 50% 향상시켰습니다',
-      icon: 'TrendingUp',
-      unlockedAt: null,
-    },
-    {
-      id: '3',
-      type: 'comprehension_master',
-      title: '이해도 마스터',
-      description: '90% 이상의 이해도를 달성했습니다',
-      icon: 'Target',
-      unlockedAt: null,
-    },
-    {
-      id: '4',
-      type: 'consistency',
-      title: '꾸준함',
-      description: '7일 연속으로 훈련했습니다',
-      icon: 'Clock',
-      unlockedAt: null,
-    },
-    {
-      id: '5',
-      type: 'word_master',
-      title: '단어 마스터',
-      description: '10,000단어를 읽었습니다',
-      icon: 'Zap',
-      unlockedAt: null,
-    },
-    {
-      id: '6',
-      type: 'level_up',
-      title: '레벨 업',
-      description: '중급 레벨에 도달했습니다',
-      icon: 'Trophy',
-      unlockedAt: null,
-    },
-  ];
-
-  const getIconComponent = (iconName: string) => {
-    const icons: Record<string, LucideIcon> = {
-      BookOpen,
-      TrendingUp,
-      Target,
-      Clock,
-      Zap,
-      Trophy,
-      Award,
-      Star,
-    };
-    return icons[iconName] || Award;
-  };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">로그인이 필요합니다</h1>
-          <p className="text-muted-foreground">업적을 확인하려면 로그인해주세요.</p>
-        </div>
-      </div>
-    );
-  }
+    fetchAchievements()
+  }, [])
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">로딩 중...</p>
+      <div className="container mx-auto py-8">
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-muted-foreground">성취 데이터를 불러오는 중...</p>
+          </div>
         </div>
       </div>
-    );
+    )
   }
 
-  const unlockedAchievements = achievements.filter(a => a.unlockedAt);
-  const lockedAchievements = placeholderAchievements.filter(
-    a => !achievements.some(unlocked => unlocked.type === a.type)
-  );
+  if (error) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <p className="text-destructive mb-4">오류가 발생했습니다</p>
+            <p className="text-muted-foreground">{error}</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">업적</h1>
+        <h1 className="text-3xl font-bold mb-2">성취</h1>
         <p className="text-muted-foreground">
-          읽기 훈련을 통해 달성한 업적들을 확인해보세요.
+          훈련 과정에서 달성한 성취들을 확인해보세요.
         </p>
       </div>
 
-      {/* 업적 통계 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      {achievements.length === 0 ? (
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">달성한 업적</CardTitle>
-            <Trophy className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{unlockedAchievements.length}</div>
-            <p className="text-xs text-muted-foreground">
-              총 {placeholderAchievements.length}개 중
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">달성률</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {Math.round((unlockedAchievements.length / placeholderAchievements.length) * 100)}%
+          <CardContent className="pt-6">
+            <div className="text-center py-12">
+              <Trophy className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-medium mb-2">아직 달성한 성취가 없습니다</h3>
+              <p className="text-muted-foreground mb-4">
+                훈련을 시작하고 목표를 달성하면 성취를 얻을 수 있습니다.
+              </p>
+              <Badge variant="outline" className="text-sm">
+                첫 번째 성취를 향해!
+              </Badge>
             </div>
-            <Progress 
-              value={(unlockedAchievements.length / placeholderAchievements.length) * 100} 
-              className="mt-2"
-            />
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">최근 업적</CardTitle>
-            <Star className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {unlockedAchievements.length > 0 ? '있음' : '없음'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {unlockedAchievements.length > 0 
-                ? new Date(unlockedAchievements[0].unlockedAt).toLocaleDateString('ko-KR')
-                : '아직 달성한 업적이 없습니다'
-              }
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* 달성한 업적 */}
-      {unlockedAchievements.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">달성한 업적</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {unlockedAchievements.map((achievement) => {
-              const IconComponent = getIconComponent(achievement.icon || 'Award');
-              return (
-                <Card key={achievement.id} className="border-green-200 bg-green-50">
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-green-100 rounded-full">
-                        <IconComponent className="h-6 w-6 text-green-600" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">{achievement.title}</CardTitle>
-                        <CardDescription>{achievement.description}</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-between items-center">
-                      <Badge variant="default" className="bg-green-600">
-                        달성 완료
-                      </Badge>
-                      <span className="text-sm text-muted-foreground">
-                        {new Date(achievement.unlockedAt).toLocaleDateString('ko-KR')}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {achievements.map((achievement) => (
+            <Card key={achievement.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Award className="h-5 w-5 text-yellow-500" />
+                    <CardTitle className="text-lg">{achievement.title}</CardTitle>
+                  </div>
+                  <Badge variant="secondary" className="text-xs">
+                    {new Date(achievement.unlockedAt).toLocaleDateString('ko-KR')}
+                  </Badge>
+                </div>
+                <CardDescription>{achievement.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Target className="h-4 w-4" />
+                  <span>달성 완료</span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
 
-      {/* 잠금된 업적 */}
-      <div>
-        <h2 className="text-2xl font-bold mb-4">도전할 업적</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {lockedAchievements.map((achievement) => {
-            const IconComponent = getIconComponent(achievement.icon || 'Award');
-            return (
-              <Card key={achievement.id} className="opacity-60">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gray-100 rounded-full">
-                      <IconComponent className="h-6 w-6 text-gray-400" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">{achievement.title}</CardTitle>
-                      <CardDescription>{achievement.description}</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Badge variant="secondary">잠금됨</Badge>
-                </CardContent>
-              </Card>
-            );
-          })}
+      {/* 성취 통계 */}
+      <div className="mt-12">
+        <h2 className="text-2xl font-bold mb-6">성취 통계</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="h-5 w-5" />
+                총 성취
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{achievements.length}</div>
+              <p className="text-sm text-muted-foreground">달성한 성취 수</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                달성률
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">
+                {achievements.length > 0 ? Math.round((achievements.length / 10) * 100) : 0}%
+              </div>
+              <p className="text-sm text-muted-foreground">전체 성취 대비</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="h-5 w-5" />
+                최근 성취
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-lg font-medium">
+                {achievements.length > 0 
+                  ? achievements[0].title 
+                  : '아직 없음'
+                }
+              </div>
+              <p className="text-sm text-muted-foreground">가장 최근에 달성한 성취</p>
+            </CardContent>
+          </Card>
         </div>
       </div>
-
-      {/* 업적 가이드 */}
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>업적 달성 가이드</CardTitle>
-          <CardDescription>업적을 달성하는 방법을 알아보세요</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h3 className="font-medium">기본 업적</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• 첫 번째 세션: 첫 번째 읽기 세션을 완료하세요</li>
-                <li>• 꾸준함: 7일 연속으로 훈련하세요</li>
-                <li>• 단어 마스터: 10,000단어를 읽으세요</li>
-              </ul>
-            </div>
-            <div className="space-y-4">
-              <h3 className="font-medium">고급 업적</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• 속도 향상: 읽기 속도를 50% 향상시키세요</li>
-                <li>• 이해도 마스터: 90% 이상의 이해도를 달성하세요</li>
-                <li>• 레벨 업: 중급 레벨에 도달하세요</li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
-  );
+  )
 } 
