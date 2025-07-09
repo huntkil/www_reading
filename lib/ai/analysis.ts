@@ -1,4 +1,4 @@
-import { Session, User } from '@/lib/types';
+import { Session } from '@/lib/types';
 
 interface AnalysisResult {
   analysis: {
@@ -73,7 +73,7 @@ interface PerformanceAnalysis {
 
 // AI 기능 완전 비활성화: 항상 Mock 응답만 반환
 
-export async function analyzeSession(sessionData?: Session, userProfile?: User): Promise<AnalysisResult> {
+export async function analyzeSession(sessionData?: Session): Promise<AnalysisResult> {
 
   
   // Mock 응답 생성

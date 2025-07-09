@@ -4,10 +4,9 @@ import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 
-import { Brain, Eye, Target, BookOpen, Play, CheckCircle, HelpCircle, GraduationCap, FileText } from "lucide-react"
+import { Brain, Eye, Target, BookOpen, HelpCircle, GraduationCap, FileText, CheckCircle } from "lucide-react"
 import { TrainingSession, TrainingModule } from '@/components/Training/TrainingSession'
 
 import { ReadingSelector } from '@/components/Training/ReadingSelector'
@@ -28,7 +27,6 @@ export default function TrainingPage() {
   const [plan, setPlan] = useState<TrainingPlan | null>(null)
   const [selectedChapter, setSelectedChapter] = useState<ReadingChapter | null>(null)
   const [showHelp, setShowHelp] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
 
   // 훈련 모듈 정의
   const trainingModules: TrainingModule[] = [
@@ -344,7 +342,7 @@ export default function TrainingPage() {
     }
   }
 
-  if (isLoading) {
+  if (false) { // isLoading 제거
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center min-h-[400px]">
